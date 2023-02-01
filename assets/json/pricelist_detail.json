@@ -1,0 +1,24 @@
+{
+    "field": {
+        "id_pricelist": "int",
+        "id_produk_oi": "int",
+        "id_produk": "int",
+        "kode_distributor": "varchar",
+        "kode_sector": "varchar",
+        "tanggal": "date",
+        "hjp": "double",
+        "hna": "double"
+    },
+    "label": {
+        "id_pricelist": "Id Pricelist",
+        "id_produk_oi": "Id Produk Oi",
+        "id_produk": "Id Produk",
+        "kode_distributor": "Kode Distributor",
+        "kode_sector": "Kode Sector",
+        "tanggal": "Tanggal",
+        "hjp": "Hjp",
+        "hna": "Hna"
+    },
+    "validation": [],
+    "alias": []
+}

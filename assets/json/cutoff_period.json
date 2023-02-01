@@ -1,0 +1,16 @@
+{
+    "field": {
+        "tahun": "varchar",
+        "bulan": "varchar",
+        "start_date": "date",
+        "end_date": "date"
+    },
+    "label": {
+        "tahun": "Tahun",
+        "bulan": "Bulan",
+        "start_date": "Start Date",
+        "end_date": "End Date"
+    },
+    "validation": [],
+    "alias": []
+}

@@ -1,0 +1,18 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "keterangan": "varchar",
+        "is_active": "boolean",
+        "produk_grup": "mediumint"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "keterangan": "Keterangan",
+        "is_active": "Aktif",
+        "produk_grup": "Produk Grup"
+    },
+    "validation": [],
+    "alias": []
+}

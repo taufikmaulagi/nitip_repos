@@ -1,0 +1,16 @@
+{
+    "field": {
+        "id": "primary_key",
+        "produk_grup": "int",
+        "nama": "varchar",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "produk_grup": "Produk Grup",
+        "nama": "Nama",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

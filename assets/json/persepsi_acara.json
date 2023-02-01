@@ -1,0 +1,18 @@
+{
+    "field": {
+        "id": "primary_key",
+        "produk_grup": "varchar",
+        "persepsi": "varchar",
+        "tipe": "enum",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "produk_grup": "Produk Grup",
+        "persepsi": "Persepsi",
+        "tipe": "Tipe",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

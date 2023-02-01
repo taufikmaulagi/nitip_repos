@@ -1,0 +1,20 @@
+{
+    "field": {
+        "id": "primary_key",
+        "kode": "varchar",
+        "nama": "varchar",
+        "alamat": "varchar",
+        "branch": "smallint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "kode": "Kode",
+        "nama": "Nama",
+        "alamat": "Alamat",
+        "branch": "Branch",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

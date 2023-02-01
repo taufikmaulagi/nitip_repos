@@ -1,0 +1,16 @@
+{
+    "field": {
+        "id": "primary_key",
+        "marketing_aktifitas": "smallint",
+        "nama": "varchar",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "marketing_aktifitas": "Marketing Aktifitas",
+        "nama": "Nama",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

@@ -1,0 +1,18 @@
+{
+    "field": {
+        "id": "primary_key",
+        "produk_grup": "varchar",
+        "target": "tinyint"
+    },
+    "label": {
+        "id": "Id",
+        "produk_grup": "Produk Grup",
+        "target": "Target"
+    },
+    "validation": [
+
+    ],
+    "alias": [
+
+    ]
+}

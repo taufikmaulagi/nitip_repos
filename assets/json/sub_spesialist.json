@@ -1,0 +1,18 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "note": "varchar",
+        "spesialist": "mediumint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "note": "Note",
+        "spesialist": "Spesialist",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

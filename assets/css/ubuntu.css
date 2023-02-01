@@ -1,0 +1,107 @@
+/* BEGIN Thin */
+@font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Thin.ttf");
+    font-weight: 100;
+    font-style: normal; }
+  /* END Thin */
+  /* BEGIN Thin Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-ThinItalic.ttf");
+    font-weight: 100;
+    font-style: italic; }
+  /* END Thin Italic */
+  /* BEGIN Light */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Light.ttf");
+    font-weight: 300;
+    font-style: normal; }
+  /* END Light */
+  /* BEGIN Light Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-LightItalic.ttf");
+    font-weight: 300;
+    font-style: italic; }
+  /* END Light Italic */
+  /* BEGIN Regular */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Regular.ttf");
+    font-weight: 400;
+    font-style: normal; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Regular.ttf");
+    font-weight: normal;
+    font-style: normal; }
+  /* END Regular */
+  /* BEGIN Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Italic.ttf");
+    font-weight: 400;
+    font-style: italic; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Italic.ttf");
+    font-weight: normal;
+    font-style: italic; }
+  /* END Italic */
+  /* BEGIN Medium */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Medium.ttf");
+    font-weight: 500;
+    font-style: normal; }
+  /* END Medium */
+  /* BEGIN Medium Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-MediumItalic.ttf");
+    font-weight: 500;
+    font-style: italic; }
+  /* END Medium Italic */
+  /* BEGIN Bold */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Bold.ttf");
+    font-weight: 700;
+    font-style: normal; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Bold.ttf");
+    font-weight: bold;
+    font-style: normal; }
+  /* END Bold */
+  /* BEGIN Bold Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-BoldItalic.ttf");
+    font-weight: 700;
+    font-style: italic; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-BoldItalic.ttf");
+    font-weight: bold;
+    font-style: italic; }
+  /* END Bold Italic */
+  /* BEGIN Black */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-Black.ttf");
+    font-weight: 900;
+    font-style: normal; }
+  /* END Black */
+  /* BEGIN Black Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/ubuntu/Ubuntu-BlackItalic.ttf");
+    font-weight: 900;
+    font-style: italic; }
+  /* END Black Italic */
+  
+  /*# sourceMappingURL=DefaultFont.css.map */
+  

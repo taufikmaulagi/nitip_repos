@@ -1,0 +1,22 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "tanggal_lahir": "date",
+        "spesialist": "smallint",
+        "subspesialist": "smallint",
+        "branch": "smallint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "tanggal_lahir": "Tanggal Lahir",
+        "spesialist": "Spesialist",
+        "subspesialist": "Subspesialist",
+        "branch": "Branch",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

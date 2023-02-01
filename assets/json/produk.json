@@ -1,0 +1,22 @@
+{
+    "field": {
+        "id": "primary_key",
+        "kode": "varchar",
+        "nama": "varchar",
+        "alias": "varchar",
+        "kode_subgrup": "char",
+        "urutan": "smallint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "kode": "Kode",
+        "nama": "Nama",
+        "alias": "Alias",
+        "kode_subgrup": "Kode Subgrup",
+        "urutan": "Urutan",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

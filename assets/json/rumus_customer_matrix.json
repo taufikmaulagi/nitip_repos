@@ -1,0 +1,20 @@
+{
+    "field": {
+        "id": "primary_key",
+        "potensi": "tinyint",
+        "status_dokter": "varchar",
+        "matrix": "varchar",
+        "standard_call": "tinyint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "potensi": "Potensi",
+        "status_dokter": "Status Dokter",
+        "matrix": "Matrix",
+        "standard_call": "Standard Call",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

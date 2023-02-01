@@ -1,0 +1,14 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "note": "varchar"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "note": "Note"
+    },
+    "validation": [],
+    "alias": []
+}

@@ -1,0 +1,16 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "call_type": "tinyint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "call_type": "Call Type",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

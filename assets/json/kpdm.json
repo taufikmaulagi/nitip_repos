@@ -1,0 +1,32 @@
+{
+    "field": {
+        "id": "primary_key",
+        "nama": "varchar",
+        "jabatan": "varchar",
+        "branch": "smallint",
+        "no_hp": "varchar",
+        "alamat": "text",
+        "tanggal_lahir": "date",
+        "jenis_kelamin": "enum",
+        "keterangan": "text",
+        "rumah_sakit": "mediumint"
+    },
+    "label": {
+        "id": "Id",
+        "nama": "Nama",
+        "jabatan": "Jabatan",
+        "branch": "Branch",
+        "no_hp": "No Hp",
+        "alamat": "Alamat",
+        "tanggal_lahir": "Tanggal Lahir",
+        "jenis_kelamin": "Jenis Kelamin",
+        "keterangan": "Keterangan",
+        "rumah_sakit": "Rumah Sakit"
+    },
+    "validation": [
+
+    ],
+    "alias": [
+
+    ]
+}

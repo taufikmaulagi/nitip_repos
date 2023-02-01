@@ -1,0 +1,24 @@
+{
+    "field": {
+        "id": "primary_key",
+        "kode": "char",
+        "kode_divisi": "char",
+        "kode_team": "char",
+        "nama": "varchar",
+        "alias": "varchar",
+        "urutan": "smallint",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "kode": "Kode",
+        "kode_divisi": "Kode Divisi",
+        "kode_team": "Kode Team",
+        "nama": "Nama",
+        "alias": "Alias",
+        "urutan": "Urutan",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

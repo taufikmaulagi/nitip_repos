@@ -1,0 +1,16 @@
+{
+    "field": {
+        "id": "primary_key",
+        "tipe": "varchar",
+        "keterangan": "varchar",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "tipe": "Tipe",
+        "keterangan": "Keterangan",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

@@ -1,0 +1,18 @@
+{
+    "field": {
+        "id": "primary_key",
+        "kode": "varchar",
+        "kode_grup": "char",
+        "nama": "varchar",
+        "is_active": "boolean"
+    },
+    "label": {
+        "id": "Id",
+        "kode": "Kode",
+        "kode_grup": "Kode Grup",
+        "nama": "Nama",
+        "is_active": "Aktif"
+    },
+    "validation": [],
+    "alias": []
+}

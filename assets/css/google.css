@@ -1,0 +1,107 @@
+/* BEGIN Thin */
+@font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Thin.woff");
+    font-weight: 100;
+    font-style: normal; }
+  /* END Thin */
+  /* BEGIN Thin Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-ThinItalic.woff");
+    font-weight: 100;
+    font-style: italic; }
+  /* END Thin Italic */
+  /* BEGIN Light */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Light.woff");
+    font-weight: 300;
+    font-style: normal; }
+  /* END Light */
+  /* BEGIN Light Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-LightItalic.woff");
+    font-weight: 300;
+    font-style: italic; }
+  /* END Light Italic */
+  /* BEGIN Regular */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Regular.woff");
+    font-weight: 400;
+    font-style: normal; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Regular.woff");
+    font-weight: normal;
+    font-style: normal; }
+  /* END Regular */
+  /* BEGIN Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Italic.woff");
+    font-weight: 400;
+    font-style: italic; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Italic.woff");
+    font-weight: normal;
+    font-style: italic; }
+  /* END Italic */
+  /* BEGIN Medium */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Medium.woff");
+    font-weight: 500;
+    font-style: normal; }
+  /* END Medium */
+  /* BEGIN Medium Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-MediumItalic.woff");
+    font-weight: 500;
+    font-style: italic; }
+  /* END Medium Italic */
+  /* BEGIN Bold */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Bold.woff");
+    font-weight: 700;
+    font-style: normal; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Bold.woff");
+    font-weight: bold;
+    font-style: normal; }
+  /* END Bold */
+  /* BEGIN Bold Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-BoldItalic.woff");
+    font-weight: 700;
+    font-style: italic; }
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-BoldItalic.woff");
+    font-weight: bold;
+    font-style: italic; }
+  /* END Bold Italic */
+  /* BEGIN Black */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-Black.woff");
+    font-weight: 900;
+    font-style: normal; }
+  /* END Black */
+  /* BEGIN Black Italic */
+  @font-face {
+    font-family: DefaultFont;
+    src: url("../fonts/google/ProductSans-BlackItalic.woff");
+    font-weight: 900;
+    font-style: italic; }
+  /* END Black Italic */
+  
+  /*# sourceMappingURL=DefaultFont.css.map */
+  

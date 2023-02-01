@@ -1,0 +1,40 @@
+{
+    "field": {
+        "id": "primary_key",
+        "profiling": "int",
+        "week1": "tinyint",
+        "week2": "tinyint",
+        "week3": "tinyint",
+        "week4": "tinyint",
+        "week5": "tinyint",
+        "week6": "tinyint",
+        "standard_call": "tinyint",
+        "appvr_at": "date",
+        "bulan": "mediumint",
+        "tahun": "year",
+        "status": "enum",
+        "keterangan": "varchar",
+        "marketing_program": "varchar",
+        "marketing_aktivitas": "varchar"
+    },
+    "label": {
+        "id": "Id",
+        "profiling": "Profiling",
+        "week1": "Week1",
+        "week2": "Week2",
+        "week3": "Week3",
+        "week4": "Week4",
+        "week5": "Week5",
+        "week6": "Week6",
+        "standard_call": "Standard Call",
+        "appvr_at": "Appvr At",
+        "bulan": "Bulan",
+        "tahun": "Tahun",
+        "status": "Status",
+        "keterangan": "Keterangan",
+        "marketing_program": "Marketing Program",
+        "marketing_aktivitas": "Marketing Aktivitas"
+    },
+    "validation": [],
+    "alias": []
+}
