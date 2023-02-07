@@ -132,7 +132,7 @@ function init_table_prof($cycle, $tahun)
                 visit_plan mediumint unsigned default NULL,
                 customer_matrix varchar(5) default \'D\',
                 status_dokter varchar(10) default \'NU\',
-                kriteria_potensi varchar(3) default null,
+                kriteria_potensi varchar(3) default 2,
                 jumlah_pasien smallint unsigned default 0,
                 hjp int(11) NOT NULL,
                 unit smallint(6) DEFAULT NULL,
@@ -141,7 +141,7 @@ function init_table_prof($cycle, $tahun)
                 total_tlai smallint(6) DEFAULT NULL,
                 cat datetime NOT NULL DEFAULT current_timestamp(),
                 uat datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP(),
-                dat datetime DEFAULT NULL,
+                dat datetime DEFAULT NULL
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1');
 
         $ci->db->query('CREATE TABLE trxdact_sku_' . $tahun . '_' . $bulan . ' (
@@ -153,8 +153,32 @@ function init_table_prof($cycle, $tahun)
               value_3 smallint unsigned default null,
               value_4 smallint unsigned default null,
               value_5 smallint unsigned default null,
+              value_6 smallint unsigned default null,
+              value_7 smallint unsigned default null,
+              value_8 smallint unsigned default null,
+              value_9 smallint unsigned default null,
+              value_10 smallint unsigned default null,
               price int unsigned default null
             ) ENGINE=MyISAM DEFAULT CHARSET=latin1');
+
+        $ci->db->query('CREATE TABLE trxdact_sku_adt_' . $tahun . '_' . $bulan . ' (
+              data_sales mediumint unsigned not null,
+              produk_group varchar(20) default NULL,
+              produk varchar(20) default NULL,
+              number_of_unit smallint unsigned default null,
+              value_1 smallint unsigned default null,
+              value_2 smallint unsigned default null,
+              value_3 smallint unsigned default null,
+              value_4 smallint unsigned default null,
+              value_5 smallint unsigned default null,
+              value_6 smallint unsigned default null,
+              value_7 smallint unsigned default null,
+              value_8 smallint unsigned default null,
+              value_9 smallint unsigned default null,
+              value_10 smallint unsigned default null,
+              price int unsigned default null
+            ) ENGINE=MyISAM DEFAULT CHARSET=latin1');
+
 
         $ci->db->query('CREATE TABLE trxdact_marketing_' . $tahun . '_' . $bulan . ' (
               data_sales mediumint unsigned not null,

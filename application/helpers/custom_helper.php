@@ -2082,3 +2082,47 @@ function get_random_header(){
     $index = rand($min_header_index, $max_header_index);
     return base_url('assets/images/header/'.$index.'.jpg');
 }
+
+function get_active_mr_by_user($user){
+
+    $id_group = user('id_group');
+
+    $parameter_search = 'n_am';
+    if($id_group == 7){
+        $parameter_search = 'n_rm';
+    } else if($id_group == 6){
+        $parameter_search = 'n_nsm';
+    } else if($id_group == 5){
+        $parameter_search = 'n_asdir';
+    }
+
+    $data = get_data('history_organogram_detail', [
+        'select' => 'history_organogram_detail.*',
+        'join' => [
+            'history_organogram on history_organogram.id = history_organogram_detail.id_history_organogram'
+        ],
+        'where' => [
+            $parameter_search => $user,
+            'nama_mr !=' => '',
+            'history_organogram.tanggal_end' => '0000-00-00'
+        ],
+        'group_by' => 'n_mr',
+        'sort_by' => 'nama_mr',
+        'sort' => 'ASC',
+    ])->result_array();
+    
+    return $data;
+
+}
+
+function cycle_by_month($bulan){
+    if (in_array($bulan, ['01', '02', '03', '04'])) {
+        $cycle = '1';
+    } elseif (in_array($bulan, ['05', '06', '07', '08'])) {
+        $cycle = '2';
+    } else {
+        $cycle = '3';
+    }
+
+    return $cycle;
+}

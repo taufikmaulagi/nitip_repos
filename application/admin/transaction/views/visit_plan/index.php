@@ -20,7 +20,7 @@
 					th('Specialist','','data-content="nama_spesialist" data-custom="true"');
 					th('Practice','','data-content="nama_outlet" data-custom="true"');
 					th('Plan Call','text-center','data-content="total_plan" data-custom="true"');
-					th('Status','text-center','data-content="status" data-boolean-text="APPROVED,REVISE,WAITING,UNSUBMITTED" data-boolean-value="APPROVED,REVISE,WAITING,UNSUBMITTED" data-type="boolean"');
+					th('Status','text-center','data-content="status" data-boolean-text="APPROVED,REVISION,WAITING,UNSUBMITTED" data-boolean-value="APPROVED,REVISION,WAITING,UNSUBMITTED" data-type="boolean"');
 					th('&nbsp;','','width="30" data-content="action_button"');
 		table_close();
 	?>
@@ -38,28 +38,29 @@
 </div>
 <?php 
 
-	modal_open('modal-form','Edit Visit Plan');
-		modal_body();
-			form_open(base_url('transaction/visit_plan/save'),'post','edit-form');
-				col_init(3,9);
-				input('hidden','id','id');
-				input('hidden','profiling','profiling');
-				label('A. Data Doctor');
-				input('text','Product Group','nama_produk_grup','','','disabled="disabled"');
-				input('text','Doctor','nama_dokter','required','','disabled="disabled"');
-				input('text','Spesialist','nama_spesialist','','','disabled="disabled"');
-				input('text','Outlet','nama_outlet','','','disabled="disabled"');
-				label('B. Plan Kunjungan');
-				input('number','Week 1','week1');
-				input('number','Week 2','week2');
-				input('number','Week 3','week3');
-				input('number','Week 4','week4');
-				input('number','Week 5','week5');
-				input('number','Week 6','week6');
-				form_button(lang('simpan'),lang('batal'));
-			form_close();
-		modal_footer();
-	modal_close();
+modal_open('modal-form','Edit Visit Plan');
+	modal_body();
+		form_open(base_url('transaction/visit_plan/save'),'post','edit-form');
+			col_init(3,9);
+			input('hidden','id','id');
+			input('hidden','profiling','profiling');
+			label('A. Data Doctor');
+			input('text','Product Group','nama_produk_grup','','','disabled="disabled"');
+			input('text','Doctor','nama_dokter','required','','disabled="disabled"');
+			input('text','Spesialist','nama_spesialist','','','disabled="disabled"');
+			input('text','Outlet','nama_outlet','','','disabled="disabled"');
+			textarea('Note','note','','','disabled="disabled"');
+			label('B. Plan Kunjungan');
+			input('number','Week 1','week1');
+			input('number','Week 2','week2');
+			input('number','Week 3','week3');
+			input('number','Week 4','week4');
+			input('number','Week 5','week5');
+			input('number','Week 6','week6');
+			form_button(lang('simpan'),lang('batal'));
+		form_close();
+	modal_footer();
+modal_close();
 	
 modal_open('modal-new-doctor','Add New');
 	modal_body();

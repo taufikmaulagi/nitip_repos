@@ -72,7 +72,9 @@ class Visit_plan extends BE_Controller {
 	}
 
 	function save() {
-		$response = save_data('trxvisit_'.date('Y').'_'.date('m'),post(),post(':validation'));
+		$data = post();
+		$data['status'] = 'WAITING';
+		$response = save_data('trxvisit_'.date('Y').'_'.date('m'),$data,post(':validation'));
 		render($response,'json');
 	}
 

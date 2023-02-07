@@ -8,6 +8,11 @@ class New_call_activity extends BE_Controller {
 			$this->load->helper('gen_trx_table');
 			init_table_dfr(date('Y'), date('m'));
 		}
+
+		if($this->db->table_exists('trxdact_'.date('Y').'_'.date('m')) == false){
+			$this->load->helper('gen_trx_table');
+			init_table_data_actual(date('Y'), date('m'));
+		}
 	}
 
 	function index() {
@@ -132,7 +137,7 @@ class New_call_activity extends BE_Controller {
 			'select' => 'a.*, e.nama as nama_spesialist, b.channel_outlet, c.customer_matrix',
 			'join' => [
 				$table_profiling.' b on b.id = a.profiling',
-				$table_data_actual.' c on c.dokter = b.dokter type left',
+				$table_data_actual.' c on a.id = c.visit_plan type left',
 				'dokter d on d.id = b.dokter',
 				'spesialist e on e.id = d.spesialist'
 			],

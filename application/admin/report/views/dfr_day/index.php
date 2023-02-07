@@ -67,25 +67,25 @@
 					'a.produk_grup' => get('pgroup'),
 					'a.call_type' => 1
 				];
-				if(get('id_group') == RM_ROLE_ID){
-					$tmp_where['a.rm'] = user('username');
+				if(get('id_group') == NSM_ROLE_ID){
+					$tmp_where['a.nsm'] = user('username');
 				}
-				$rm = get_data('trxdfr_'.get('tahun').'_'.get('bulan').' a',[
-					'select' => 'rm.nama as nama_rm, rm.username as rm, re.kode as nama_region',
+				$nsm = get_data('trxdfr_'.get('tahun').'_'.get('bulan').' a',[
+					'select' => 'nsm.nama as nama_nsm, nsm.username as nsm, re.kode as nama_region',
 					'where' => $tmp_where,
 					'join' => [
-						'tbl_user rm on rm.username = a.rm',
-						'jumlah_hari_kerja hk on hk.user = rm.username and bulan = '.get('bulan').' type left',
+						'tbl_user nsm on nsm.username = a.nsm',
+						'jumlah_hari_kerja hk on hk.user = nsm.username and bulan = '.get('bulan').' type left',
 						'target_dfr td on td.produk_grup = a.produk_grup type left',
-						'region re on re.id = rm.region type left'
+						'region re on re.id = nsm.region type left'
 					],
-					'group_by' => 'rm',
+					'group_by' => 'nsm',
 					'sort_by' => 're.kode',
 					'sort' => 'ASC'
 				])->result_array();
-				foreach($rm as $key => $val){
+				foreach($nsm as $key => $val){
 					$nama_region = $val['nama_region'];
-					$rm_counter = [
+					$nsm_counter = [
 						'name' => 0,
 						'region' => 0,
 						'a' => 0,
@@ -95,7 +95,7 @@
 					];
 					$tmp_where = [
 						'a.produk_grup' => get('pgroup'),
-						'a.rm' => $val['rm'],
+						'a.nsm' => $val['nsm'],
 						'a.call_type' => 1
 					];
 					if(user('id_group') == AM_ROLE_ID){
@@ -184,30 +184,30 @@
 							echo '<td>'.(round($per_day * 100, 2)).' %</td>';
 						echo '</tr>';
 
-						$rm_counter['a'] += intval($am_counter['a']) > 0 ? intval($am_counter['a']) : 0;
-						$rm_counter['hk'] += intval($am_counter['hk']) > 0 ? intval($am_counter['hk']) : 0;
-						$rm_counter['dfr_day'] += intval($am_counter['dfr_day']) > 0 ? intval($am_counter['dfr_day']) : 0;
-						$rm_counter['target'] += $am_counter['target'] / count($mr) > 0 ? $am_counter['target'] / count($mr): 0;
+						$nsm_counter['a'] += intval($am_counter['a']) > 0 ? intval($am_counter['a']) : 0;
+						$nsm_counter['hk'] += intval($am_counter['hk']) > 0 ? intval($am_counter['hk']) : 0;
+						$nsm_counter['dfr_day'] += intval($am_counter['dfr_day']) > 0 ? intval($am_counter['dfr_day']) : 0;
+						$nsm_counter['target'] += $am_counter['target'] / count($mr) > 0 ? $am_counter['target'] / count($mr): 0;
 					}
-					// if($rm_counter['a'] <=0 ) continue;
-					$dfr_day = (intval($rm_counter['a']) > 0 && intval($rm_counter['hk']) > 0) ? (intval($rm_counter['a']) / intval($rm_counter['hk'])) : 0;
-					$per_day = $dfr_day > 0 && $rm_counter['target'] > 0 ? ($dfr_day / $rm_counter['target']) : 0;
+					// if($nsm_counter['a'] <=0 ) continue;
+					$dfr_day = (intval($nsm_counter['a']) > 0 && intval($nsm_counter['hk']) > 0) ? (intval($nsm_counter['a']) / intval($nsm_counter['hk'])) : 0;
+					$per_day = $dfr_day > 0 && $nsm_counter['target'] > 0 ? ($dfr_day / $nsm_counter['target']) : 0;
 					echo '<tr style="background-color:#8dc3a7">';
 						echo '<td>'.($akey+1).'</td>';
-						echo '<td>'.$val['nama_rm'].'(RM)</td>';
+						echo '<td>'.$val['nama_nsm'].'(NSM)</td>';
 						echo '<td>'.$nama_region.'</td>';
-						echo '<td>'.$rm_counter['a'].'</td>';
-						echo '<td>'.$rm_counter['hk'].'</td>';
+						echo '<td>'.$nsm_counter['a'].'</td>';
+						echo '<td>'.$nsm_counter['hk'].'</td>';
 						// echo '<td>'.$am_counter['call_type_b'].'</td>';
 						// echo '<td>'.$am_counter['call_type_c'].'</td>';
 						echo '<td>'.(round($dfr_day, 2)).'</td>';
-						echo '<td>'.round($rm_counter['target']/count($rm),2).'</td>';
+						echo '<td>'.round($nsm_counter['target']/count($nsm),2).'</td>';
 						echo '<td>'.(round($per_day * 100, 2)).' %</td>';
 					echo '</tr>';
-					$nasional_counter['a'] += intval($rm_counter['a']) > 0 ? intval($rm_counter['a']) : 0;
-					$nasional_counter['hk'] += intval($rm_counter['hk']) > 0 ? intval($rm_counter['hk']) : 0;
-					$nasional_counter['dfr_day'] += intval($rm_counter['dfr_day']) > 0 ? intval($rm_counter['dfr_day']) : 0;
-					$nasional_counter['target'] += $rm_counter['target']/count($rm) > 0 ? $rm_counter['target']/count($rm) : 0;
+					$nasional_counter['a'] += intval($nsm_counter['a']) > 0 ? intval($nsm_counter['a']) : 0;
+					$nasional_counter['hk'] += intval($nsm_counter['hk']) > 0 ? intval($nsm_counter['hk']) : 0;
+					$nasional_counter['dfr_day'] += intval($nsm_counter['dfr_day']) > 0 ? intval($nsm_counter['dfr_day']) : 0;
+					$nasional_counter['target'] += $nsm_counter['target']/count($nsm) > 0 ? $nsm_counter['target']/count($nsm) : 0;
 				}
 				$dfr_day = (intval($nasional_counter['a']) > 0 && intval($nasional_counter['hk']) > 0) ? ($nasional_counter['a'] / $nasional_counter['hk']) : 0;
 				$per_day = $dfr_day > 0 && $nasional_counter['target'] > 0 ? ($dfr_day / $nasional_counter['target']) : 0;

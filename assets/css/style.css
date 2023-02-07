@@ -5160,7 +5160,7 @@ form .card-body.p-0 .cke_textarea_inline {
 
 .btn-next::after,
 .btn-prev::before {
-	font-family: 'Font Awesome 5 Free';
+	font-family: 'Font Awesome 5 Pro';
 	display: inline-block;
 }
 
@@ -5180,7 +5180,7 @@ form .card-body.p-0 .cke_textarea_inline {
 
 #accordion .card-header::before {
 	content: "\f077";
-	font-family: 'Font Awesome 5 Free';
+	font-family: 'Font Awesome 5 Pro';
 	float: right;
 	transition: all 0.5s;
 }

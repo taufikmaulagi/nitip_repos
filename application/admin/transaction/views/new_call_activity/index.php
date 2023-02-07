@@ -6,9 +6,7 @@
 			<?php echo breadcrumb(); ?>
 		</div>
 		<div class="float-right">
-			<label>Produk Group</label>
 			<select class="select2" id="fpgroup" style="width: 150px;" onchange="filter()">
-				<label> Product Group </label>
 				<option value="">All Product Group</option>
 				<?php foreach ($this->session->userdata('produk_group') as $val) {
 					echo '<option value="' . $val['kode'] . '">' . $val['nama'] . '</option>';

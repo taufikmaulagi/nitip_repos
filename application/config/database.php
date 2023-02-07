@@ -78,10 +78,6 @@ $key = hash('sha256','260992');
 
 $db['default'] = array(
 	'dsn'	=> '',
-	//'hostname' => openssl_decrypt($__db['hostname'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'username' => openssl_decrypt($__db['username'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'password' => openssl_decrypt($__db['password'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'database' => openssl_decrypt($__db['database'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
 	'hostname' => 'localhost',
 	'username' => 'root',
 	'password' => '',
@@ -104,10 +100,6 @@ $db['default'] = array(
 
 $db['siap'] = array(
 	'dsn'	=> '',
-	//'hostname' => openssl_decrypt($__db['hostname'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'username' => openssl_decrypt($__db['username'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'password' => openssl_decrypt($__db['password'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
-	//'database' => openssl_decrypt($__db['database'],'AES-256-CBC',$key,0,substr($key, 0, 16)),
 	'hostname' => '202.158.47.148',
 	'username' => 'root',
 	'password' => 'Otsuk@123!@#',

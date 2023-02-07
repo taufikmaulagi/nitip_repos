@@ -4,6 +4,9 @@ class Approval_visit_plan extends BE_Controller {
 
 	function __construct() {
 		parent::__construct();
+		if(!table_exists('trxvisit_'.date('Y').'_'.date('m'))){
+			init_table_visit_plan(date('Y'), date('m'));
+		}
 	}
 
 	function index() {
@@ -12,33 +15,22 @@ class Approval_visit_plan extends BE_Controller {
 
 	function data() {
 		$config = [
-			'select' => '(
-				case 
-					when bulan = 1 then "Januari"
-					when bulan = 2 then "Februari"
-					when bulan = 3 then "Maret"
-					when bulan = 4 then "April"
-					when bulan = 5 then "Mei"
-					when bulan = 6 then "Juni"
-					when bulan = 7 then "Juli"
-					when bulan = 8 then "Agustus"
-					when bulan = 9 then "September"
-					when bulan = 10 then "Oktober"
-					when bulan = 11 then "November"
-					when bulan = 12 then "Desember"
-				end
-			) as nama_bulan',
-			'where' => [
-				'mr' => get('mr'),
-				'produk_grup' => get('pgroup'),
-				// 'appvr_at' => null,
-				'status != ' => 1
+			'select' => 'd.nama as nama_dokter, s.nama as nama_spesialist, o.nama as nama_outlet, (week1 + week2 + week3 + week4 + week5 + week6) as total_plan',
+			'join' => [
+				'trxprof_'.date('Y').'_'.active_cycle().' b on b.id = trxvisit_'.date('Y').'_'.date('m').'.profiling',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'outlet o on o.id = b.outlet',
 			],
-			'access_view' => false,
-			'access_edit' => false,
+			'where' => [
+				'b.mr' => get('mr'),
+				'b.produk_grup' => get('pgroup'),
+			],
+			'access_view' 	=> false,
+			'access_edit' 	=> false,
 			'access_delete' => false,
 			'button' => [
-				button_serverside('btn-sky','btn-detail',['fa-search','Detail',true], 'act-detail')
+				button_serverside('btn-sky','btn-input',['fa-search','Detail',true], 'act-detail')
 			]
 		];
 		$data = data_serverside($config);
@@ -47,53 +39,41 @@ class Approval_visit_plan extends BE_Controller {
 
 	function approval(){
 
-		$alasan_not_approve = post('alasan_not_approve');
-		// $this->db->trans_begin();
-		if(!empty($alasan_not_approve)){
+		$note = post('alasan_not_approve');
+		if(!empty($note)){
 			$resp = update_data('trxvisit_'.date('Y').'_'.date('m'), [
-				'status' => '4',
-				'alasan_not_approve' => $alasan_not_approve,
-				'appvr_at' => NULL
+				'status' => 'REVISION',
+				'note' => $note,
 			], 'id', post('id'));
 		} else {
 			$resp = update_data('trxvisit_'.date('Y').'_'.date('m'), [
-				'status' => '3',
+				'status' => 'APPROVED',
 			],'id',post('id'));
 		}
-		// if($this->db->trans_status()===TRUE){
-		// 	$this->db->trans_commit();
-		// } else {
-		// 	$this->db->trans_rollback();
-		// }
-
 		render(['status' => $resp,'year'=>date('Y'),'month'=>date('m'),'id'=>post('id')],'json');
 
 	}
 
 	function submit(){
-		$pgrup = post('pgroup');
-		$mr = post('mr');
+		$pgrup 	= post('pgroup');
+		$mr 	= post('mr');
 
-		$res['visit_plan'] = get_data('trxvisit_'.date('Y').'_'.date('m'), [
-			'where' => [
-				'mr' => $mr,
-				'produk_grup' => $pgrup,
+		$res['visit_plan'] = get_data('trxvisit_'.date('Y').'_'.date('m').' a', [
+			'join' => [
+				'trxprof_'.date('Y').'_'.active_cycle().' b on a.profiling = b.id'
 			],
-			'where_in' => [
-				'status' => [2,4]
-			]
+			'where' => [
+				'b.mr' => $mr,
+				'b.produk_grup' => $pgrup,
+				'a.status' => 'WAITING'
+			],
 		])->result_array();
+
 		$this->db->trans_status();
-		
 		foreach($res['visit_plan'] as $val){
-
-			// $draft = $val;
-			// unset($draft['id']);
-			
-			$val['appvr_at'] = date('Y-m-d H:i:s');
-			$val['status'] = $val['status'] == 2 ? 3 : $val['status'];
-
-			update_data('trxvisit_'.date('Y').'_'.date('m'), $val, 'id', $val['id']);
+			update_data('trxvisit_'.date('Y').'_'.date('m'), [
+				'status' => 'APPROVED'
+			], 'id', $val['id']);
 		}
 		if($this->db->trans_status() === TRUE){
 			$this->db->trans_commit();
@@ -105,11 +85,20 @@ class Approval_visit_plan extends BE_Controller {
 	}
 
 	function get_data() {
-		$visit_plan = get_data('trxvisit_'.date('Y').'_'.date('m'), [
+		$visit_plan = get_data('trxvisit_'.date('Y').'_'.date('m').' a', [
+			'select' => 'a.*, c.nama as nama_dokter, d.nama as nama_spesialist, e.nama as nama_outlet, f.nama as nama_produk_grup',
+			'join' => [
+				'trxprof_'.date('Y').'_'.active_cycle().' b on a.profiling = b.id',
+				'dokter c on c.id = b.dokter',
+				'spesialist d on d.id = c.spesialist',
+				'outlet e on e.id = b.outlet',
+				'produk_grup f on f.kode = b.produk_grup'
+			],
 			'where' => [
-				'id' => get('id')
+				'a.id' => post('id')
 			],
 		])->row_array();
+		
 		render($visit_plan,'json');
 	}
 

@@ -5,7 +5,7 @@
 			<?php echo breadcrumb(); ?>
 		</div>
 		<div class="float-right">
-			<button class="btn btn-sky px-3" id="bSubmit" onclick="popUpSubmit()"><i class="fa-check mr-2"></i>APPROVE ALL WAITING STATUS</button>
+			<button class="btn btn-sky px-3" id="bSubmit" onclick="popUpSubmit()"><i class="fa-check mr-2"></i>APPROVE ON PROCESS STATUS</button>
 		</div>
 		<div class="clearfix"></div>
 	</div>
@@ -22,7 +22,7 @@
 				th('Patient Type','text-center','data-content="tipe_pasien"');
 				th(lang('jumlah_pasien'),'text-center','data-content="jumlah_pasien_perbulan"');
 				th('Potensi','text-center','data-content="jumlah_potensi" data-custom="true"');
-				th('Approve ?','text-center','data-content="status" data-type="boolean" data-boolean-text="WAITING, NOT APPROVED" data-boolean-value="WAITING, NOT APPROVED"');
+				th('Approve ?','text-center','data-content="status" data-type="boolean" data-boolean-text="ON PROCESS, NOT APPROVED" data-boolean-value="WAITING, NOT APPROVED"');
 				th('&nbsp;','','width="30" data-content="action_button"');
 	table_close();
 	?>
@@ -115,7 +115,7 @@ modal_close();
 		var data_id = $(this).closest('tr').find('.btn-input').attr('data-id');
 		var badge = $(this);
 		if(badge.attr('class') == 'badge badge-danger'){
-			badge.html('WAITING').removeClass('badge-danger').addClass('badge-success');
+			badge.html('ON PROCESS').removeClass('badge-danger').addClass('badge-success');
 			$.ajax({
 				url: '<?=base_url('transaction/approval_profiling/approval/')?>'+$('#fcycle').val()+'/'+$('#ftahun').val(),
 				method: 'post',
@@ -129,7 +129,7 @@ modal_close();
 				}
 			})
 		} else {
-			if(badge.html() == 'WAITING'){
+			if(badge.html() == 'ON PROCESS'){
 				badge.html('NOT APPROVED').removeClass('badge-success').addClass('badge-danger');
 				$.ajax({
 					url: "<?=base_url('transaction/approval_profiling/approval/')?>"+$('#fcycle').val()+'/'+$('#ftahun').val(),
