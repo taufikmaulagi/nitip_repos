@@ -212,101 +212,103 @@ modal_close();
 
 		let html_adt = '<div id="accordion">'
 		$.each(sku_adt, function(i ,v){
-			let sku = v.sku
-			html_adt += '<div class="card">'
-				html_adt += '<div class="card-header" id="heading'+v.kode+'">'
-					html_adt += '<h5 class="mb-0">'
-						html_adt += '<button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#produk'+v.kode+'" aria-controls="produk'+v.kode+'">'
-							html_adt += '<b>'+v.nama+'</b>'
-						html_adt += '</button>'
-					html_adt += '</h5>'
-				html_adt += '</div>'
-				html_adt += '<div id="produk'+v.kode+'" class="collapse" aria-labelledby="heading'+v.kode+'" data-parent="#accordion">'
-					html_adt += '<div class="card-body p-0">'
-						html_adt += '<table class="table table-bordered table-stripped">'
-							html_adt += '<thead>'
-								html_adt += '<th>No.</th><th>Nama</th><th>Units</th>'
-								$.each(v.indikasi, function(i,v){
-									html_adt += '<th>'+v.nama+'</th>'
-								})
-								html_adt += '<th>Jumlah</th>';
-							html_adt += '</thead>'
-							html_adt += '<tbody>'
-								$.each(v.produk, function(i, vv){
+			if(v['kode'] != '<?=get('produk_group')?>'){
+				let sku = v.sku
+				html_adt += '<div class="card">'
+					html_adt += '<div class="card-header" id="heading'+v.kode+'">'
+						html_adt += '<h5 class="mb-0">'
+							html_adt += '<button type="button" class="btn btn-link collapsed" data-toggle="collapse" data-target="#produk'+v.kode+'" aria-controls="produk'+v.kode+'">'
+								html_adt += '<b>'+v.nama+'</b>'
+							html_adt += '</button>'
+						html_adt += '</h5>'
+					html_adt += '</div>'
+					html_adt += '<div id="produk'+v.kode+'" class="collapse" aria-labelledby="heading'+v.kode+'" data-parent="#accordion">'
+						html_adt += '<div class="card-body p-0">'
+							html_adt += '<table class="table table-bordered table-stripped">'
+								html_adt += '<thead>'
+									html_adt += '<th>No.</th><th>Nama</th><th>Units</th>'
+									$.each(v.indikasi, function(i,v){
+										html_adt += '<th>'+v.nama+'</th>'
+									})
+									html_adt += '<th>Jumlah</th>';
+								html_adt += '</thead>'
+								html_adt += '<tbody>'
+									$.each(v.produk, function(i, vv){
 
-								var val_indikasi_1 = 0
-								var val_indikasi_2 = 0
-								var val_indikasi_3 = 0
-								var val_indikasi_4 = 0
-								var val_indikasi_5 = 0
-								var val_indikasi_6 = 0
-								var val_indikasi_7 = 0
-								var val_indikasi_8 = 0
-								var val_indikasi_9 = 0
-								var val_indikasi_10 = 0
-								var number_of_unit = 0
+									var val_indikasi_1 = 0
+									var val_indikasi_2 = 0
+									var val_indikasi_3 = 0
+									var val_indikasi_4 = 0
+									var val_indikasi_5 = 0
+									var val_indikasi_6 = 0
+									var val_indikasi_7 = 0
+									var val_indikasi_8 = 0
+									var val_indikasi_9 = 0
+									var val_indikasi_10 = 0
+									var number_of_unit = 0
 
-								$.each(sku, function(j,w){
-									if(v.id == w.produk){
-										val_indikasi_1 = w.value_1
-										val_indikasi_2 = w.value_2
-										val_indikasi_3 = w.value_3
-										val_indikasi_4 = w.value_4
-										val_indikasi_5 = w.value_5
-										val_indikasi_6 = w.value_6
-										val_indikasi_7 = w.value_7
-										val_indikasi_8 = w.value_8
-										val_indikasi_9 = w.value_9
-										val_indikasi_10 = w.value_10
-										number_of_unit = w.number_of_unit
-										price = w.price
-									}
+									$.each(sku, function(j,w){
+										if(vv.id == w.produk){
+											val_indikasi_1 = w.value_1
+											val_indikasi_2 = w.value_2
+											val_indikasi_3 = w.value_3
+											val_indikasi_4 = w.value_4
+											val_indikasi_5 = w.value_5
+											val_indikasi_6 = w.value_6
+											val_indikasi_7 = w.value_7
+											val_indikasi_8 = w.value_8
+											val_indikasi_9 = w.value_9
+											val_indikasi_10 = w.value_10
+											number_of_unit = w.number_of_unit
+											price = w.price
+										}
+									})
+									html_adt += '<tr><td>'+(i+1)+'</td><td>'+vv.nama+'</td><td><input type="hidden" name="sku_adt_'+v.kode+'[]" value="'+vv.id+'"><input type="number" name="units_adt_'+v.kode+'[]" class="form-control form-control-sm" style="width:75px" value="'+number_of_unit+'"></td>'
+									
+									$.each(v.indikasi, function(k,x){
+										var tmp_val = 0;
+										switch(k){
+											case 0:
+												tmp_val = val_indikasi_1
+											break;
+											case 1:
+												tmp_val = val_indikasi_2
+											break;
+											case 2:
+												tmp_val = val_indikasi_3
+											break;
+											case 3:
+												tmp_val = val_indikasi_4
+											break;
+											case 4:
+												tmp_val = val_indikasi_5
+											break;
+											case 5:
+												tmp_val = val_indikasi_6
+											break;
+											case 6:
+												tmp_val = val_indikasi_7
+											break;
+											case 7:
+												tmp_val = val_indikasi_8
+											break;
+											case 8:
+												tmp_val = val_indikasi_9
+											break;
+											case 9:
+												tmp_val = val_indikasi_10
+											break;
+										}
+										html_adt += '<td><input type="number" name="value_adt_'+v.kode+(k+1)+'[]" class="form-control form-control-sm" style="width:75px" value="'+tmp_val+'"></td>'
+									})
+									html_adt += '<td> Rp.'+numberFormat(price * number_of_unit)+',-</td></tr>';
 								})
-								html_adt += '<tr><td>'+(i+1)+'</td><td>'+vv.nama+'</td><td><input type="hidden" name="sku_adt_'+v.kode+'[]" value="'+vv.id+'"><input type="number" name="units_adt_'+v.kode+'[]" class="form-control form-control-sm" style="width:75px" value="'+number_of_unit+'"></td>'
-								
-								$.each(v.indikasi, function(k,x){
-									var tmp_val = 0;
-									switch(k){
-										case 0:
-											tmp_val = val_indikasi_1
-										break;
-										case 1:
-											tmp_val = val_indikasi_2
-										break;
-										case 2:
-											tmp_val = val_indikasi_3
-										break;
-										case 3:
-											tmp_val = val_indikasi_4
-										break;
-										case 4:
-											tmp_val = val_indikasi_5
-										break;
-										case 5:
-											tmp_val = val_indikasi_6
-										break;
-										case 6:
-											tmp_val = val_indikasi_7
-										break;
-										case 7:
-											tmp_val = val_indikasi_8
-										break;
-										case 8:
-											tmp_val = val_indikasi_9
-										break;
-										case 9:
-											tmp_val = val_indikasi_10
-										break;
-									}
-									html_adt += '<td><input type="number" name="value_adt_'+v.kode+(k+1)+'[]" class="form-control form-control-sm" style="width:75px" value="'+tmp_val+'"></td>'
-								})
-								html_adt += '<td> Rp.'+numberFormat(price * number_of_unit)+',-</td></tr>';
-							})
-							html_adt += '</tbody>'
-						html_adt += '</table>'
+								html_adt += '</tbody>'
+							html_adt += '</table>'
+						html_adt += '</div>'
 					html_adt += '</div>'
 				html_adt += '</div>'
-			html_adt += '</div>'
+			}
 		})
 		html_adt += '</div>'
 		$('#adt_produk').html(html_adt)

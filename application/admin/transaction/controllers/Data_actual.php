@@ -149,7 +149,7 @@ class Data_actual extends BE_Controller
 			$v['produk'] = $tmp_produk;
 			$v['sku'] = [];
 			foreach($sku_adt as $sk => $sv){
-				if($v['kode'] == $sv['produk_grup']){
+				if($v['kode'] == $sv['produk_group']){
 					$v['sku'][] = $sv;
 				}
 			}
@@ -257,10 +257,53 @@ class Data_actual extends BE_Controller
 			'customer_matrix' 			=> get_customer_matrix($data_actual['produk_grup'], $status_dokter, $kriteria_potensi),
 			'jumlah_pasien' 			=> $jumlah_pasien,
 		];
-
+		// debug($data); die;
+		//Additional Product Group SKU
 		$produk_grup = $this->session->userdata('produk_group');
 		foreach($produk_grup as $k => $v){
-			$data
+
+			if(!isset($data['sku_adt_'.$v['kode']])) continue;
+
+			$sku			= $data['sku_adt_'.$v['kode']];
+			$units 			= $data['units_adt_'.$v['kode']];
+			$value_1 		= !empty($data['value_adt_'.$v['kode'].'1']) ? $data['value_adt_'.$v['kode'].'1'] : [];
+			$value_2 		= !empty($data['value_adt_'.$v['kode'].'2']) ? $data['value_adt_'.$v['kode'].'2'] : [];
+			$value_3 		= !empty($data['value_adt_'.$v['kode'].'3']) ? $data['value_adt_'.$v['kode'].'3'] : [];
+			$value_4 		= !empty($data['value_adt_'.$v['kode'].'4']) ? $data['value_adt_'.$v['kode'].'4'] : [];
+			$value_5 		= !empty($data['value_adt_'.$v['kode'].'5']) ? $data['value_adt_'.$v['kode'].'5'] : [];
+			$value_6 		= !empty($data['value_adt_'.$v['kode'].'6']) ? $data['value_adt_'.$v['kode'].'6'] : [];
+			$value_7 		= !empty($data['value_adt_'.$v['kode'].'7']) ? $data['value_adt_'.$v['kode'].'7'] : [];
+			$value_8 		= !empty($data['value_adt_'.$v['kode'].'8']) ? $data['value_adt_'.$v['kode'].'8'] : [];
+			$value_9 		= !empty($data['value_adt_'.$v['kode'].'9']) ? $data['value_adt_'.$v['kode'].'9'] : [];
+			$value_10 		= !empty($data['value_adt_'.$v['kode'].'10']) ? $data['value_adt_'.$v['kode'].'10'] : [];
+
+			delete_data('trxdact_sku_adt_' . $tahun . '_' . $bulan, [
+				'data_sales' => $data['id'],
+				'produk_group' => $v['kode']
+			]);
+			// debug($units);
+
+			for ($i = 0; $i < count($sku); $i++) {
+				$price = intval(get_price_detail($sku[$i]));
+				insert_data('trxdact_sku_adt_' . $tahun . '_' . $bulan, [
+					'data_sales' => $data['id'],
+					'produk' => $sku[$i],
+					'produk_group' => $v['kode'],
+					'number_of_unit' => $units[$i],
+					'value_1' => !empty($value_1[$i]) ? $value_1[$i] : 0,
+					'value_2' => !empty($value_2[$i]) ? $value_2[$i] : 0,
+					'value_3' => !empty($value_3[$i]) ? $value_3[$i] : 0,
+					'value_4' => !empty($value_4[$i]) ? $value_4[$i] : 0,
+					'value_5' => !empty($value_5[$i]) ? $value_5[$i] : 0,
+					'value_6' => !empty($value_6[$i]) ? $value_6[$i] : 0,
+					'value_7' => !empty($value_7[$i]) ? $value_7[$i] : 0,
+					'value_8' => !empty($value_8[$i]) ? $value_8[$i] : 0,
+					'value_9' => !empty($value_9[$i]) ? $value_9[$i] : 0,
+					'value_10' => !empty($value_10[$i]) ? $value_10[$i] : 0,
+					'price' => $price
+				]);
+			}
+
 		}
 
 		update_data('trxdact_' . $tahun . '_' . $bulan, $update_actual, 'id', $data['id']);

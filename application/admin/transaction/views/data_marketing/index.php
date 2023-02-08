@@ -45,21 +45,16 @@
 </div>
 <div class="content-body">
 	<?php
-	if($status == 'no_visit'){
-		echo '<div style="text-align:center">
-			<img src="'.base_url('assets/images/no-data.svg').'" width="40%">
-			<p>&nbsp;</p>
-			<h3> Belum Membuat Visit Plan. </h3>
-		</div>';
-	} else if(get('tahun') != '' && get('bulan') != '' && get('produk_group') != ''){
+	if(get('tahun') != '' && get('bulan') != '' && get('produk_group') != ''){
 		table_open('',true,base_url('transaction/data_marketing/data?produk_group='.get('produk_group').'&bulan='.get('bulan').'&tahun='.get('tahun')),'trxdact_'.get('tahun').'_'.get('bulan'));
 			thead();
 				tr();
 					th('#','text-center','width="30" data-content="id"');
-					th('Dokter','','data-content="nama_dokter"');
+					th('Dokter','','data-content="nama_dokter" data-custom="true"');
 					th('Specialist','','data-content="nama_spesialist" data-custom="true"');
-					th('Sub Specialist','','data-content="nama_sub_spesialist" data-custom="true"');
-					th('Practice','','data-content="nama_outlet"');
+					th('Practice','','data-content="nama_outlet" data-custom="true"');
+					th('Status Dokter','text-center','data-content="status_dokter"');
+					th('Cust. Matrix','text-center','data-content="customer_matrix"');
 					th('&nbsp;','','width="30" data-content="action_button"');
 		table_close();
 	} else {
@@ -72,9 +67,9 @@
 	?>
 </div>
 <?php
-modal_open('modal-edit','Edit Data Actual','modal-xl');
+modal_open('modal-form','Edit Data Actual','modal-xl');
 	modal_body();
-		form_open(base_url('transaction/data_marketing/update/'.get('tahun').'/'.get('bulan')),'post','edit-form');
+		form_open(base_url('transaction/data_marketing/save'),'post','edit-form');
 			col_init(3,9);
 			input('hidden','id','id');
 			label('A. Info Dokter');
@@ -107,98 +102,85 @@ modal_close();
 			location.replace(base_url + 'transaction/data_marketing?produk_group='+pgroup+'&bulan='+bulan+'&tahun='+tahun);
 		}
 	}
-	$(document).on('click','.btn-edit', function(){
-		$.ajax({
-			url: base_url + 'transaction/data_marketing/get_detail_dokter/'+$('#fbulan').val()+'/'+$('#ftahun').val()+'?id='+$(this).attr('data-id'),
-			success: function(resp){
-				console.log(resp);
-				var data_marketing = resp.data_actual
-				var marketing = resp.marketing
-				var value_marketing = resp.value_marketing
-				var persepsi = resp.persepsi
-				var sub_marketing = resp.sub_marketing
-				var persepsi_sebelum = [];
-				var persepsi_setelah = [];
 
-				$.each(persepsi, function(i, v){
-					if(v.tipe == 'Sebelum'){
-						persepsi_sebelum.push(v);
-					} else {
-						persepsi_setelah.push(v);
-					}
-				})
+	$('#modal-form').on('shown.bs.modal', function (e){
+		let res_edit = response_edit
 
-				$('#id').val(data_marketing.id)
-				$('#dokter').val(data_marketing.nama_dokter)
-				$('#spesialist').val(data_marketing.nama_spesialist)
-				$('#sub_spesialist').val(data_marketing.nama_sub_spesialist)
-				$('#outlet').val((data_marketing.nama_outlet ? data_marketing.nama_outlet : 'Reguler'))
-				$('#tahun').val('<?=strftime('%Y', strtotime(date(get('tahun').'-m-d')))?>')
-				$('#bulan').val('<?=strftime('%B', strtotime(date('Y-'.get('bulan').'-d')))?>')
-				$('#produk_group').val(data_marketing.nama_produk_grup)
+		var data_marketing = res_edit.data_actual
+		var marketing = res_edit.marketing
+		var value_marketing = res_edit.value_marketing
+		var persepsi = res_edit.persepsi
+		var sub_marketing = res_edit.sub_marketing
+		var persepsi_sebelum = [];
+		var persepsi_setelah = [];
 
-				var html_marketing_head = '<th>No.</th><th>Nama</th><th>TYPE</th><th>SUB MARKETING</th><th>TANGGAL ACARA</th><th>SEBAGAI</th><th>NAMA PEMBICARA</th>'
-				var html_marketing = ''
-				$.each(marketing, function(i, v){
-
-					var curret_sub = [];
-					$.each(sub_marketing, function(is,vs){
-						if(v.id == vs.marketing_aktifitas){
-							curret_sub.push(vs);
-						}
-					})
-
-					var value_tipe = '';
-					var value_sub = '';
-					var value_tanggal = '';
-					var value_persepsi_sebelum = '';
-					var value_persepsi_setelah = '';
-					var value_sebagai = '';
-					var value_nama_pembicara = '';
-
-					$.each(value_marketing, function(iv, vv){
-						if(vv.marketing_aktifitas == v.id){
-							value_tipe = vv.tipe
-							value_sub = vv.sub_marketing_aktifitas
-							value_tanggal = vv.tanggal
-							value_persepsi_sebelum = vv.persepsi_sebelum
-							value_persepsi_setelah = vv.persepsi_setelah
-							value_sebagai = vv.sebagai
-							value_nama_pembicara = vv.nama_pembicara
-						}
-					})
-					var html_sub_marketing = '<option value=""> -- </option>';
-					$.each(curret_sub, function(ic,vc){
-						html_sub_marketing += '<option value="'+vc.id+'" '+(value_sub == vc.id ? 'selected="selected"' : '')+'>'+vc.nama+'</option>';
-					})
-					// var html_persepsi_sebelum = '<option value=""> -- </option>';
-					// $.each(persepsi_sebelum, function(ip, vp){
-					// 	html_persepsi_sebelum += '<option value="'+vp.id+'" '+(value_persepsi_sebelum == vp.id ? 'selected="selected"' : '')+'>'+vp.persepsi+'</option>';
-					// })
-					// var html_persepsi_setelah = '<option value=""> -- </option>';
-					// $.each(persepsi_setelah, function(ip, vp){
-					// 	html_persepsi_setelah += '<option value="'+vp.id+'" '+(value_persepsi_setelah == vp.id ? 'selected="selected"' : '')+'>'+vp.persepsi+'</option>';
-					// })
-
-					var html_sebagai = '<option value=""> -- </option>'+
-										'<option value="Pembicara" '+(value_sebagai == "Pembicara" ? 'selected="selected"' : '')+'>Pembicara</option>'+
-										'<option value="Peserta" '+(value_sebagai == "Peserta" ? 'selected="selected"' : '')+'>Peserta</option>';
-
-					html_marketing += '<tr>'+
-						'<td>'+(i+1)+'</td><td>'+v.nama+'</td>'+
-						'<td><select class="form-control" name="type|'+v.id+'"><option value=""> -- </option><option value="Online" '+(value_tipe == 'Online' ? 'selected="selected"' : '')+'>ONLINE</option><option value="Offline" '+(value_tipe == 'Offline' ? 'selected="selected"' : '')+'>OFFLINE</option></select></td>'+
-						'<td><select class="form-control" name="sub|'+v.id+'">'+html_sub_marketing+'<select></td><td>'+
-						'<input type="date" class="form-control" name="tanggal|'+v.id+'" value="'+value_tanggal+'"></td>'+
-						'<td><select class="form-control" name="sebagai|'+v.id+'">'+html_sebagai+'<select></td>'+
-						'<td><input type="text" class="form-control" name="nama_pembicara|'+v.id+'" value="'+value_nama_pembicara+'"></td>'+
-						// '<td><select class="form-control" name="persepsi_setelah|'+v.id+'">'+html_persepsi_setelah+'<select></td>'+
-					'</tr>'
-				})
-				
-				$('#indikasi_body').html(html_marketing)
-				$('#indikasi_box').html(html_marketing_head)
-				$('#modal-edit').modal()
+		$.each(persepsi, function(i, v){
+			if(v.tipe == 'Sebelum'){
+				persepsi_sebelum.push(v);
+			} else {
+				persepsi_setelah.push(v);
 			}
 		})
+
+		$('#id').val(data_marketing.id)
+		$('#dokter').val(data_marketing.nama_dokter)
+		$('#spesialist').val(data_marketing.nama_spesialist)
+		$('#sub_spesialist').val(data_marketing.nama_sub_spesialist)
+		$('#outlet').val((data_marketing.nama_outlet ? data_marketing.nama_outlet : 'Reguler'))
+		$('#tahun').val('<?=strftime('%Y', strtotime(date(get('tahun').'-m-d')))?>')
+		$('#bulan').val('<?=strftime('%B', strtotime(date('Y-'.get('bulan').'-d')))?>')
+		$('#produk_group').val(data_marketing.nama_produk_grup)
+
+		var html_marketing_head = '<th>No.</th><th>Nama</th><th>TYPE</th><th>SUB MARKETING</th><th>TANGGAL ACARA</th><th>SEBAGAI</th><th>NAMA PEMBICARA</th>'
+		var html_marketing = ''
+		$.each(marketing, function(i, v){
+
+			var curret_sub = [];
+			$.each(sub_marketing, function(is,vs){
+				if(v.id == vs.marketing_aktifitas){
+					curret_sub.push(vs);
+				}
+			})
+
+			var value_tipe = '';
+			var value_sub = '';
+			var value_tanggal = '';
+			var value_persepsi_sebelum = '';
+			var value_persepsi_setelah = '';
+			var value_sebagai = '';
+			var value_nama_pembicara = '';
+
+			$.each(value_marketing, function(iv, vv){
+				if(vv.marketing_aktifitas == v.id){
+					value_tipe = vv.tipe
+					value_sub = vv.sub_marketing_aktifitas
+					value_tanggal = vv.tanggal
+					value_persepsi_sebelum = vv.persepsi_sebelum
+					value_persepsi_setelah = vv.persepsi_setelah
+					value_sebagai = vv.sebagai
+					value_nama_pembicara = vv.nama_pembicara
+				}
+			})
+			var html_sub_marketing = '<option value=""> -- </option>';
+			$.each(curret_sub, function(ic,vc){
+				html_sub_marketing += '<option value="'+vc.id+'" '+(value_sub == vc.id ? 'selected="selected"' : '')+'>'+vc.nama+'</option>';
+			})
+			
+			var html_sebagai = '<option value=""> -- </option>'+
+								'<option value="Pembicara" '+(value_sebagai == "Pembicara" ? 'selected="selected"' : '')+'>Pembicara</option>'+
+								'<option value="Peserta" '+(value_sebagai == "Peserta" ? 'selected="selected"' : '')+'>Peserta</option>';
+
+			html_marketing += '<tr>'+
+				'<td>'+(i+1)+'</td><td>'+v.nama+'</td>'+
+				'<td><select class="form-control" name="type|'+v.id+'"><option value=""> -- </option><option value="Online" '+(value_tipe == 'Online' ? 'selected="selected"' : '')+'>ONLINE</option><option value="Offline" '+(value_tipe == 'Offline' ? 'selected="selected"' : '')+'>OFFLINE</option></select></td>'+
+				'<td><select class="form-control" name="sub|'+v.id+'">'+html_sub_marketing+'<select></td><td>'+
+				'<input type="date" class="form-control" name="tanggal|'+v.id+'" value="'+value_tanggal+'"></td>'+
+				'<td><select class="form-control" name="sebagai|'+v.id+'">'+html_sebagai+'<select></td>'+
+				'<td><input type="text" class="form-control" name="nama_pembicara|'+v.id+'" value="'+value_nama_pembicara+'"></td>'+
+			'</tr>'
+		})
+		
+		$('#indikasi_body').html(html_marketing)
+		$('#indikasi_box').html(html_marketing_head)
 	})
 </script>
