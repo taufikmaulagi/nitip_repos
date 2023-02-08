@@ -1,7 +1,16 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 
-require __DIR__.'/PHPExcel.php';
+require 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class Simpleexcel {
 
@@ -63,9 +72,9 @@ class Simpleexcel {
     }
 
     function export() {
-        $objPHPExcel    = new PHPExcel();
+        $objPHPExcel    = new Spreadsheet();
         $objPHPExcel->getProperties()
-        ->setCreator("Bayu Ramadhan")
+        ->setCreator("Wel Well")
         ->setTitle($this->title[0]);
         for($z=0; $z < count($this->title); $z++) {
             if($z > 0) $objPHPExcel->createSheet();
@@ -100,8 +109,8 @@ class Simpleexcel {
                 $objPHPExcel->getActiveSheet()->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)->applyFromArray(
                     array(
                         'borders' => array(
-                            'allborders' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'allBorders' => array(
+                                'borderStyle' => Border::BORDER_THIN,
                                 'color' => array('rgb' => '777777')
                             )
                         )
@@ -111,7 +120,7 @@ class Simpleexcel {
                 $objPHPExcel->getActiveSheet()
                     ->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)
                     ->getFill()
-                    ->setFillType(PHPExcel_Style_Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setRGB('EEEEEE');
             }
@@ -130,7 +139,9 @@ class Simpleexcel {
                         $last_key   = 0;
                         $w = 0;
                         foreach ($this->thead[$z] as $th => $v_th) {
-                            if($th == $a_gh[0]) $first_key = $w;
+                            if($th == $a_gh[0]) {
+                                $first_key = $w;
+                            }
                             if($th == $a_gh[count($a_gh)-1]) $last_key = $w;
                             $w++;
                         }
@@ -140,7 +151,7 @@ class Simpleexcel {
                             $objPHPExcel->getActiveSheet()->mergeCells($this->col_excel[$first_key].$i.':'.$this->col_excel[$last_key].$i);
                             $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$first_key].$i.':'.$this->col_excel[$last_key].$i)->applyFromArray(array(
                                     'alignment' => array(
-                                        'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_CENTER,
+                                        'horizontal' => Alignment::HORIZONTAL_CENTER,
                                     )
                                 ));
                             foreach($a_gh as $agh) {
@@ -154,8 +165,8 @@ class Simpleexcel {
                 $objPHPExcel->getActiveSheet()->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)->applyFromArray(
                     array(
                         'borders' => array(
-                            'allborders' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'allBorders' => array(
+                                'borderStyle' => Border::BORDER_THIN,
                                 'color' => array('rgb' => '777777')
                             )
                         )
@@ -165,7 +176,7 @@ class Simpleexcel {
                 $objPHPExcel->getActiveSheet()
                     ->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)
                     ->getFill()
-                    ->setFillType(PHPExcel_Style_Fill::FILL_SOLID)
+                    ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()
                     ->setRGB('EEEEEE');
 
@@ -192,8 +203,8 @@ class Simpleexcel {
                 $objPHPExcel->getActiveSheet()->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)->applyFromArray(
                     array(
                         'borders' => array(
-                            'allborders' => array(
-                                'style' => PHPExcel_Style_Border::BORDER_THIN,
+                            'allBorders' => array(
+                                'borderStyle' => Border::BORDER_THIN,
                                 'color' => array('rgb' => '777777')
                             )
                         )
@@ -216,7 +227,7 @@ class Simpleexcel {
                             if($c == '0000-00-00' || $c == '0000-00-00 00:00:00' || !$c) {
                                 $objset->setCellValue($this->col_excel[$k].$i, '');
                             } else {
-                                $objset->setCellValue($this->col_excel[$k].$i, PHPExcel_Shared_Date::PHPToExcel($c));
+                                $objset->setCellValue($this->col_excel[$k].$i, Date::PHPToExcel($c));
                                 if (strpos($c, ':') !== false) {
                                     $formatCode = 'dd/mm/yyyy h:mm';
                                 } else {
@@ -226,13 +237,13 @@ class Simpleexcel {
                             }
                         } elseif(strpos($thead[$k], '-s') !== false) {
                             $objset->setCellValueExplicit($this->col_excel[$k].$i, str_replace(array('-b','-c','-p','-s'), '', $konten),PHPExcel_Cell_DataType::TYPE_STRING);
-                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
+                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
                         } elseif(strpos($thead[$k], '-c') !== false) {
                             $objset->setCellValue($this->col_excel[$k].$i, str_replace(array('-b','-c','-p','-s'), '', $konten));
-                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_CURRENCY);
+                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY);
                         } elseif(strpos($thead[$k], '-p') !== false) {
                             $objset->setCellValue($this->col_excel[$k].$i, str_replace(array('-b','-c','-p','-s'), '', $konten));
-                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00);
+                            $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
                         }
                         if(strpos($konten,'-b') !== false) {
                             $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getFont()->setBold( true );
@@ -257,11 +268,11 @@ class Simpleexcel {
                                 $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getFont()->setBold( true );
                             }
                             if(strpos($konten,'-c') !== false && is_numeric($konten)) {
-                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_CURRENCY);
+                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_CURRENCY);
                             } elseif(strpos($konten,'-s') !== false && is_float($konten)) {
-                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_TEXT);
+                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
                             } elseif(strpos($konten,'-p') !== false && is_float($konten)) {
-                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(PHPExcel_Style_NumberFormat::FORMAT_PERCENTAGE_00);
+                                $objPHPExcel->getActiveSheet()->getStyle($this->col_excel[$k].$i)->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_PERCENTAGE_00);
                             }
                         }                        
                     }
@@ -314,7 +325,7 @@ class Simpleexcel {
         $filename = $this->flname ? $this->flname : $this->title[0];
         $objPHPExcel->setActiveSheetIndex(0);
         $objPHPExcel->getActiveSheet()->setTitle(str_replace('template_import_','',$this->title[0]));
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter = IOFactory::createWriter($objPHPExcel, 'Xlsx');
         header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
         header("Cache-Control: no-store, no-cache, must-revalidate");
         header("Cache-Control: post-check=0, pre-check=0", false);
@@ -327,7 +338,7 @@ class Simpleexcel {
 
     function read($file) {
         try {
-            $objPHPExcel = PHPExcel_IOFactory::load($file);
+            $objPHPExcel = IOFactory::load($file);
         } catch(Exception $e) {
             die('Error loading file :' . $e->getMessage());
         }

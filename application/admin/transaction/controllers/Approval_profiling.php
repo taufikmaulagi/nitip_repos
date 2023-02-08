@@ -74,9 +74,16 @@ class Approval_profiling extends BE_Controller {
 				'status' => 'NOT APPROVED',
 			], 'id', $profiling['id']);
 		} else {
-			update_data('trxprof_'.$tahun.'_'.$cycle, [
-				'status' => 'WAITING',
-			], 'id', $profiling['id']);
+			$type = post('type_approved');
+			if($type == 'approved'){
+				update_data('trxprof_'.$tahun.'_'.$cycle, [
+					'status' => 'APPROVED',
+				], 'id', $profiling['id']);
+			} else {
+				update_data('trxprof_'.$tahun.'_'.$cycle, [
+					'status' => 'WAITING',
+				], 'id', $profiling['id']);
+			}
 		}
 		if($this->db->trans_status()===TRUE){
 			$this->db->trans_commit();

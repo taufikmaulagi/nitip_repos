@@ -88,6 +88,7 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 define('COST',9);
 define('ALLOWED_FILE_UPLOAD', 'jpg|jpeg|png|bmp|gif|pdf|xpdf|zip');
 
+define('DEV_ROLE_ID', 1);
 define('AM_ROLE_ID', 8);
 define('MR_ROLE_ID', 9);
 define('RM_ROLE_ID', 7);

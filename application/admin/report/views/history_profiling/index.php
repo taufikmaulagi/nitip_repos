@@ -1,3 +1,7 @@
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/4.2.1/js/dataTables.fixedColumns.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
 <div class="content-header">
 	<div class="main-container position-relative">
 		<div class="header-info d-none d-sm-block">
@@ -108,7 +112,16 @@
 			</div>
 			<div class="col-md-9">
 				<div class="card">
-					<div class="card-header">History Profiling</div>
+					<div class="card-header">
+						<div class="row">
+							<div class="col-sm-6">
+								History Profiling
+							</div>
+							<div class="col-sm-6 text-right">
+								<button class="btn btn-fresh btn-sm btn-export"><i class="fa fa-download mr-2"></i> Export</button>
+							</div>
+						</div>
+					</div>
 					<div class="card-body" style="margin: 0; padding:0" id="result">
 						<div class="text-center">
 							<img src="<?=base_url('assets/images/no-data.svg')?>" width="40%">
@@ -121,64 +134,37 @@
 	</div>
 </div>
 <?php 
-modal_open('rs-profiling','Rumah Sakit Profiling','modal-lg','');
-	// modal_body('rs-profiling');
-		echo '<div class="table-responsive">';
-		echo '<table class="table table-bordered table-app" id="rs-table">';
-		echo '	<thead>';
-		echo '		<tr>';
-		echo '			<th>#</th>';
-		echo '			<th>Rumah Sakit</th>';
-		echo '			<th>Jumlah Pasien</th>';
-		echo '			<th>Potensi</th>';
-		echo '			<th></th>';
-		echo '		</tr>';
-		echo '	</thead>';
-		echo '	<tbody>';
-		echo '	</tbody>';
-		echo '</table>';
-		echo '</div>';
-modal_close();
-modal_open('edit-form','Detail Profiling','','','bg-secondary');
-	modal_body();
-		form_open('','post','form-edit');
-			col_init(4,8);
-			input('hidden','id','id');
+modal_open('modal-form');
+modal_body();
+	form_open(base_url('transaction/profiling/save'), 'post', 'form');
+		col_init(4, 8);
+			input('hidden', 'id', 'id');
 			label('A. Product');
-			input('text','Product Group','eproduk_grup','required','','disabled="disabled"');
+			select2('Product Group', 'produk_grup', 'required', $this->session->userdata('produk_group'), 'kode', 'nama');
 			label('B. Doctor');
-			input('hidden','edokter','edokter');
-			input('text','Doctor','dokter_list','required','','disabled="disabled"');
-			input('text','Spesialist','espesialist','','','disabled="disabled"');
-			// input('text','Branch','branch','required','','disabled="disabled"');
-			input('text','Practice/Outlet','eoutlet','required','','disabled="disabled"');
-			radio('Channel Outlet','echannel_outlet',[
+			select('Dokter', 'dokter', 'required', []);
+			input('text','Spesialist','spesialist','','','disabled');
+			input('text','Sub Spesialist','sub_spesialist','','','disabled');
+			select2('Branch', 'branch', 'required', get_data('branch')->result_array(), 'id', 'nama');
+			select2('Practice/Outlet', 'outlet', 'required');
+			radio('Channel Outlet', 'channel_outlet', [
 				'Goverment Hospital' => 'Goverment Hospital',
 				'Private Hospital' => 'Private Hospital',
 				'Apotek' => 'Apotek'
-			],'data-validation="required" disabled="disabled"');
-			radio('Patient Type','etipe_pasien',[
+			], 'data-validation="required"');
+			radio('Patient Type', 'tipe_pasien', [
 				'Regular' => 'Regular',
 				'Non Regular' => 'Non Regular',
-			],'data-validation="required" disabled="disabled"');
-			input('number','Number Of Patiens Per Month','ejumlah_pasien','required','');
+			], 'data-validation="required"');
+			input('number', 'Number Of Patiens Per Month', 'jumlah_pasien_perbulan', 'required');
 			label('C. Indications');
-			echo '<div id="eindikasi_box"></div>';
-			echo '<div id="eadditional_box" style="margin-bottom:10px"></div>';
-			label('D. Marketing');
-			echo '<div id="emarketing_box"></div>';
+			echo '<div id="indikasi_box"></div>';
+			echo '<div id="additional_box"></div>';
 			echo '<p>&nbsp;</p>';
-			form_button(lang('simpan'),lang('batal'));
-		form_close();
-modal_close();
-modal_open('not-approved-form','Approval Profiling','','','bg-danger');
-	modal_body();
-		form_open('javascript:void(0)','post','save_na');
-			col_init(4,8);
-			input('hidden','nid','nid');
-			textarea('Reason Not Approve','nreason','required');
-			form_button(lang('simpan'),lang('batal'));
-		form_close();
+			if(user('id_group') == MR_ROLE_ID || user('id_group') == DEV_ROLE_ID){
+				form_button(lang('simpan'), lang('batal'));
+			}
+	form_close();
 modal_close();
 ?>
 <script type="text/javascript">
@@ -197,78 +183,65 @@ modal_close();
 			type : 'post',
 			success : function(r) {
 				document.querySelector('#result').innerHTML = r;
+				$('.datatable').DataTable({
+					fixedHeader: true,
+					scrollY:"500px",
+					scrollX: true,
+					scrollCollapse: true,
+					paging: false,
+					fixedColumns:   {
+						left: 2,
+						right: 1
+					}
+				});
 			}
 		});
 	}
 
 	$(document).on('click','.btn-detail', function(){
-		$(this).html('<i class="fa fa-spinner"></i>');
+		$(this).html('<i class="fa fa-spinner-third spin"></i>');
 		$(this).attr('disabled','disabled');
-		var id = $(this).attr('data-id');
-		$.ajax({
-			url: '<?=base_url()?>'+'report/history_profiling/get_all/'+$('#fbulan').val()+'/'+$('#ftahun').val()+'/'+$('#fmr').val()+'?id='+id,
-			success: function(resp){
-				console.log(resp);
-				var appendRs = '';
-				var tmpIndex = 1;
-				$.each(resp, function(i, val){
-					appendRs += '<tr>'+
-									'<td>'+(tmpIndex++)+'</td>'+
-									'<td>'+(val.nama_outlet ? val.nama_outlet : 'Reguler')+'</td>'+
-									// '<td>'+(val.channel_outlet ?  val.channel_outlet : '<center>-</center>')+'</td>'+
-									// '<td>'+(val.tipe_pasien ? val.tipe_pasien : '<center>-</center>')+'</td>'+
-									'<td>'+(val.jumlah_pasien)+'</td>'+
-									'<td>'+(val.total_potensi_tablet ? val.total_potensi_tablet : 0)+'</td>'+
-									'<td style="width: 1px; white-space:nowrap;"><button class="btn btn-sky btn-sm btn-detail-rs" data-id="'+val.id+'"><i class="fa-search"></i></button></td>'
-								'</tr>';
-				});
-				$(this).html('<i class="fa fa-search"></i>');
-				$(this).prop("disabled", false);
-				$('#rs-table > tbody').empty();
-				$('#rs-table').append(appendRs);
-				$('#rs-profiling').modal();
-			}.bind(this)
-		});
-	});
-
-	$(document).on('click','.btn-detail-rs', function(){
 		var id = $(this).attr('data-id');
 		$.ajax({
 			url: '<?=base_url()?>'+'report/history_profiling/get_data/'+$('#fbulan').val()+'/'+$('#ftahun').val(),
 			method: 'post',
 			data: {id: id},
-			success: function(resp){
-				console.log(resp);
-				$('#id').val(resp.id);
-				$('#eproduk_grup').val(resp.nama_produk_grup);
-				$('#eproduk_subgrup').val(resp.nama_produk_sub_grup);
-				$('#eproduk').val(resp.nama_produk);
-				$('#edokter').val(resp.dokter);
-				$('#dokter_list').val(resp.nama_dokter);
-				$('#branch').val(resp.nama_branch);
-				$('#select2-ebranch-container').attr('title', resp.nama_branch);
-				$('#select2-ebranch-container').html(resp.nama_branch);
-				$('#eoutlet').val(resp.nama_outlet);
-				$('#ejumlah_pasien').val(resp.total_jumlah_pasien);
-				$('#espesialist').val(resp.nama_spesialist);
-				$("input[name=echannel_outlet][value='" + resp.channel_outlet + "']").attr('checked', 'checked');	
-				$("input[name=etipe_pasien][value='" + resp.tipe_pasien + "']").attr('checked', 'checked');
-			
-				init_indikasi(resp.produk_grup, 'edit', resp.val_indikasi_1, resp.val_indikasi_2, resp.val_indikasi_3, resp.val_indikasi_4, resp.val_indikasi_5, resp.val_indikasi_6, resp.val_indikasi_7, resp.val_indikasi_8, resp.val_indikasi_9, resp.val_indikasi_10);
-				init_additional(resp.produk_grup, 'edit', resp.fee_patient, resp.ap_original);
-				init_marketing(resp.produk_grup, 'edit', resp.marketing_bulan_1, resp.marketing_bulan_2, resp.marketing_bulan_3, resp.marketing_bulan_4);
+			success: function(r){
+				$('#id').val(r.id)
+				$('#produk_grup').val(r.produk_grup).trigger('change')
+				let dokter = r.dokter != undefined ? r.dokter : ''
+				let outlet = r.outlet != undefined ? r.outlet : ''
+				if(dokter != ''){
+					$('#dokter').html('<option value="'+dokter+'" selected>'+ r.nama_dokter + '</option>')
+					$('#dokter').trigger('change')
+				}
+				if(outlet != ''){
+					$('#outlet').html('<option value="'+outlet+'" selected>'+ r.nama_outlet + '</option>')
+				}
+				$('#branch').val(r.branch).trigger('change')
+				$("input[name=channel_outlet][value='" + r.channel_outlet + "']").attr('checked', 'checked')
+				$("input[name=tipe_pasien][value='" + r.tipe_pasien + "']").attr('checked', 'checked')
+				$('#jumlah_pasien_perbulan').val(r.jumlah_pasien_perbulan)
 
-				// $('#indikasi_1').val(resp.indikasi_1);
-				$('#edit-form').modal();
+				response_edit = r
+				$('.btn-detail').html('<i class="fa fa-search"></i>')
+				$('.btn-detail').removeAttr('disabled')
+				$('#modal-form').modal();
 			}
 		})
 	});
 
-	function init_indikasi(grup, type = 'add', indikasi_1 = '', indikasi_2 = '', indikasi_3 = '', indikasi_4 = '', indikasi_5 = '', indikasi_6 = '', indikasi_7 = '', indikasi_8 = '', indikasi_9 = '', indikasi_10 = '') {
-		$('#indikasi_box').html('');
-		$('#eindikasi_box').html('');
+	$('#produk_grup').on('change', function() {
+		var tpgroup = $(this).val();
+
+		init_indikasi(tpgroup);
+		init_additional(tpgroup);
+	});
+
+	function init_indikasi(grup) {
+		$('#indikasi_box').html('<div class="text-center"> Loading Data <i class="fa fa-spinner fa-spin fa-3x"></i></div>');
 		$.ajax({
-			url: '<?= base_url('report/history_profiling/get_indikasi?pgrup=') ?>' + grup,
+			url: '<?= base_url('transaction/profiling/get_indikasi?pgrup=') ?>' + grup,
 			success: function(resp) {
 				var html_indikasi = '';
 				var index_indikasi = 1;
@@ -276,126 +249,71 @@ modal_close();
 					if (index_indikasi == 11) {
 						return false;
 					}
-					var tmp_val = '';
-					switch (index_indikasi) {
-						case 1:
-							tmp_val = indikasi_1;
-							break;
-						case 2:
-							tmp_val = indikasi_2;
-							break;
-						case 3:
-							tmp_val = indikasi_3;
-							break;
-						case 4:
-							tmp_val = indikasi_4;
-							break;
-						case 5:
-							tmp_val = indikasi_5;
-							break;
-						case 6:
-							tmp_val = indikasi_6;
-							break;
-						case 7:
-							tmp_val = indikasi_7;
-							break;
-						case 8:
-							tmp_val = indikasi_8;
-							break;
-						case 9:
-							tmp_val = indikasi_9;
-							break;
-						case 10:
-							tmp_val = indikasi_10;
-							break;
+					let v_value = 0
+
+					if(response_edit['indikasi_'+(i+1)] != ''){
+						if(response_edit['indikasi_' + (i+1)] == val['id']){
+							v_value = response_edit['val_indikasi_'+(i+1)]
+						}
+					} else {
+						// send admin to add new indications wlwkwkwk
 					}
+					
 					html_indikasi += '<div class="form-group row">' +
 						'<label class="col-form-label col-md-4" for="specialist">' + val.nama + '</label>' +
 						'<div class="col-md-8">' +
-						'<input type="hidden" name="indikasi_' + index_indikasi + '" id="indikasi_' + index_indikasi + '" autocomplete="off" value="' + val.id + '">' +
-						'<input type="number" name="val_indikasi_' + index_indikasi + '" id="val_indikasi_' + index_indikasi + '" autocomplete="off" class="form-control" data-validation="" value="' + tmp_val + '">' +
+							'<input type="hidden" name="indikasi_' + index_indikasi + '" id="indikasi_' + index_indikasi + '" autocomplete="off" value="' + val.id + '">' +
+							'<input type="number" name="val_indikasi_' + index_indikasi + '" id="val_indikasi_' + index_indikasi + '" autocomplete="off" class="form-control" data-validation="" value="' + v_value + '">' +
 						'</div>' +
-						'</div>';
+					'</div>';
 					index_indikasi++;
 				});
-				if (type == 'add') {
-					$('#indikasi_box').html(html_indikasi);
-				} else {
-					$('#eindikasi_box').html(html_indikasi);
-				}
+				html_indikasi = html_indikasi ? html_indikasi : '<div class="text-center"> No Data !</div>';
+				$('#indikasi_box').html(html_indikasi);
 			}
 		});
 	}
 
-	<?php if(in_array(user('id_group'), [AM_ROLE_ID, NSM_ROLE_ID])): ?>
-	$(document).on('click','tbody td .badge',function(){
-		var data_id = $(this).closest('tr').find('.btn-detail').attr('data-id');
-		if($(this).attr('class') == 'badge badge-danger'){
-			// id_approve = data_id;
-			// cConfirm.open('Apakah mau dikembalikan menjadi approve ?', 'approve');
-			$.ajax({
-				url: '<?=base_url('report/history_profiling/approval/')?>'+$('#fbulan').val()+'/'+$('#ftahun').val(),
-				method: 'post',
-				data: {id: data_id},
-				success: function(resp){
-					if(resp.status==true){
-						// cAlert.open('Sudah diubah kembali menjadi approve','success');
-						refreshData();
-					} else {
-						cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-					}
-				}
-			})
-		} else {
-			// $('#nid').val(data_id);
-			$.ajax({
-				url: "<?=base_url('report/history_profiling/approval/')?>"+$('#fbulan').val()+'/'+$('#ftahun').val(),
-				method: 'post',
-				data: {id: data_id,alasan_not_approve:'none'},
-				success: function(resp){
-					if(resp.status==true){
-						// cAlert.open('Sudah diubah menjadi Not Approve','success');
-						// $('#not-approved-form').modal();
-						// $(this).trigger("reset");
-						refreshData();
-					} else {
-						cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-					}
-				}
-			})
-		}
-	});
-	<?php endif; ?>
-
-	function init_additional(grup, type='add', fee_patient='', ap_original=0){
-		$('#additional_box').html('');
-		$('#eadditional_box').html('');
+	function init_additional(grup, type = 'add', fee_patient = '', ap_original = 0) {
+		$('#additional_box').html('<div class="text-center"> Loading Data <i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+		$('#eadditional_box').html('<div class="text-center"> Loading Data <i class="fa fa-spinner fa-spin fa-3x"></i></div>');
 		html_additional = '';
-		if(grup == 'EH'){
-			html_additional = '<div class="row">'+
-				'<h4 class="col-form-label col-12 ">D. Additional</h4>'+
-			'</div>'+
-			'<div class="form-group row">'+
-				'<label class="col-form-label col-md-4 required" for="fee_patient">Fee Patient</label>'+
-				'<div class="col-md-8">'+
-					'<input type="number" name="fee_patient" id="fee_patient" autocomplete="off" class="form-control" data-validation="" value="'+fee_patient+'">'+
-				'</div>'+
-			'</div>'+
-			'<div class="form-group row">'+
-				'<label class="col-form-label col-md-4 required" for="ap_original">R/ Original</label>'+
-				'<div class="col-md-8">'+
-					'<label class="switch"><input type="checkbox" name="ap_original" id="ap_original" '+(ap_original == 1 ? 'checked' : '')+'>'+
-						'<span class="slider"></span>'+
-					'</label>'+
-				'</div>'+
-			'</div>';
+		if (grup == 'EH') {
+			html_additional = 	'<div class="row">' +
+									'<h4 class="col-form-label col-12 ">D. Additional</h4>' +
+								'</div>' +
+								'<div class="form-group row">' +
+									'<label class="col-form-label col-md-4 required" for="fee_patient">Fee Patient</label>' +
+									'<div class="col-md-8">' +
+										'<input type="number" name="fee_patient" id="fee_patient" autocomplete="off" class="form-control" data-validation="" value="' + fee_patient + '">' +
+									'</div>' +
+								'</div>' +
+								'<div class="form-group row">' +
+									'<label class="col-form-label col-md-4 required" for="ap_original">R/ Original</label>' +
+									'<div class="col-md-8">' +
+										'<label class="switch"><input type="checkbox" name="ap_original" id="ap_original" ' + (ap_original == 1 ? 'checked' : '') + '>' +
+										'<span class="slider"></span>' +
+										'</label>' +
+									'</div>' +
+								'</div>';
 		}
-		if(type == 'add'){
+		if (type == 'add') {
 			$('#additional_box').html(html_additional);
 		} else {
 			$('#eadditional_box').html(html_additional);
 		}
 	}
+
+	$(document).on('change','#dokter',function(){
+		let id = $(this).val()
+		$.ajax({
+			url: base_url + 'transaction/profiling/get_detail_dokter?id='+id,
+			success: function(r){
+				$('#spesialist').val(r.nama_spesialist)
+				$('#sub_spesialist').val(r.nama_sub_spesialist)
+			}
+		})
+	})
 	
 	$(document).ready(function(){
 		var fteam = $('#fteam').val();
@@ -415,18 +333,7 @@ modal_close();
 	});
 
 	function get_produk_grup(team=''){
-		// $.ajax({
-		// 	url: base_url+'report/history_profiling/get_produk_grup?team='+team,
-		// 	success: function(resp){
-		// 		var html_pgroup = '';
-		// 		$('#fpgroup').html('');
-		// 		$.each(resp, function(i, val){
-		// 			html_pgroup += '<option value="'+val.kode+'">'+val.nama+'</option>';
-		// 		});
-		// 		$('#fpgroup').html(html_pgroup);
-				get_am(team);
-		// 	}
-		// });
+		get_am(team);
 	}
 
 	function get_am(team){
@@ -458,80 +365,67 @@ modal_close();
 		});
 	}
 
-	function init_marketing(pgroup, type = 'add', value_1='', value_2='', value_3='', value_4='') {
-		$('#marketing_box').html('');
-		$('#emarketing_box').html();
-		$.ajax({
-			url: '<?= base_url('report/history_profiling/get_marketing?pgroup=') ?>' + pgroup,
-			success: function(resp) {
-				var html_marketing = '<div class="accordion" id="marketingAcc">';
-				for(i=1;i<=4;i++){
-					var value = '';
-					switch(i){
-						case 1:
-							value = value_1;
-						break;
-						case 2:
-							value = value_2;
-						break;
-						case 3:
-							value = value_3;
-						break;
-						case 4:
-							value = value_4;
-						break;
+	$(document).on('click','tbody td .badge',function(){
+
+		if('<?=user('id_group')?>' != '<?=MR_ROLE_ID?>'){
+			var data_id = $(this).attr('data-id');
+			var badge = $(this);
+			if(badge.attr('class') == 'badge badge-danger'){
+				badge.html('APPROVED').removeClass('badge-danger').addClass('badge-success');
+				$.ajax({
+					url: '<?=base_url('transaction/approval_profiling/approval/')?>'+__bulan_to_cycle($('#fbulan').val())+'/'+$('#ftahun').val(),
+					method: 'post',
+					data: {id: data_id, type_approved: 'approved'},
+					success: function(resp){
+						if(resp.status==true){
+							// badge.html('WAITING').removeClass('badge-danger').addClass('badge-success');
+						} else {
+							cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
+						}
 					}
-					if (value != null) {
-						value = (value).split(',');
-					} else {
-						value = [];
-					}
-					var cycle = '<?=active_cycle()?>';
-					var bulan = [];
-					if(cycle == 1){
-						bulan = ['Januari','Februari','Maret','April'];
-					} else if(cycle == 2){
-						bulan = ['Mei','Juni','Juli','Agustus'];
-					} else {
-						bulan = ['September','Oktober','November','Desember'];
-					}
-					var isShow = '';
-					if(i == 1){
-						isShow = 'show';
-					}
-					html_marketing += '<div class="card">'+
-					'<div class="card-header" id="heading'+i+'">'+
-						'<h5 class="mb-0">'+
-						'<button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse'+i+'" aria-expanded="true" aria-controls="collapse'+i+'"><b>'+
-							bulan[i-1]+
-						'</b></button>'+
-						'</h5>'+
-					'</div>'+
-					'<div id="collapse'+i+'" class="collapse '+isShow+'" aria-labelledby="heading'+i+'" data-parent="#marketingAcc">'+
-						'<div class="card-body">';
-					$.each(resp, function(k, val) {
-						var tmp_checked = '';
-						if (value.length > 0) {
-							for (var j = 0; j < value.length; j++) {
-								if (value[j] == val.id) {
-									tmp_checked = 'checked="true"';
-								}
+				})
+			} else {
+				if(badge.html() == 'APPROVED'){
+					badge.html('NOT APPROVED').removeClass('badge-success').addClass('badge-danger');
+					$.ajax({
+						url: "<?=base_url('transaction/approval_profiling/approval/')?>"+__bulan_to_cycle($('#fbulan').val())+'/'+$('#ftahun').val(),
+						method: 'post',
+						data: {id: data_id,alasan_not_approve:'none'},
+						success: function(resp){
+							if(resp.status==true){
+								// badge.html('NOT APPROVED').removeClass('badge-success').addClass('badge-danger');
+							} else {
+								cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
 							}
 						}
-						//input type checkbox
-						html_marketing += '<input type="checkbox" id="' + (val.nama).replace(' ', '_') + i + '" name="marketing_bulan_'+i+'[]" value="' + val.id + '" ' + tmp_checked + '>&nbsp;&nbsp;<label for="' + (val.nama).replace(' ', '_') + i + '">' + val.nama + '</label><br>';
-					});
-					html_marketing += '</div>'+
-									'</div>'+
-								'</div>';
-				}
-				html_marketing += '</div>';
-				if (type == 'add') {
-					$('#marketing_box').html(html_marketing);
-				} else {
-					$('#emarketing_box').html(html_marketing);
+					})
 				}
 			}
-		})
+		}
+	});
+
+	function __bulan_to_cycle(bulan){
+		let cycle = 3
+		if(['01','02','03','04'].includes(bulan)){
+			cycle = 1
+		} else if(['05','06','07','08'].includes(bulan)){
+			cycle = 2
+		}
+		return cycle
 	}
+
+	$(document).on('click', '.btn-export', function(){
+		let produk_group = $('#fpgroup').val()
+		let mr = $('#fmr').val()
+		let bulan = $('#fbulan').val()
+		let tahun = $('#ftahun').val()
+
+		$(this).html('<i class="fa fa-spinner-third spin mr-2"></i> Loading')
+		$(this).attr('disabled',true)
+		location.href = base_url + 'report/history_profiling/export?mr='+mr+'&tahun='+tahun+'&produk_group='+produk_group+'&bulan='+bulan
+
+		$(this).html('<i class="fa fa-download mr-2"></i> Export')
+		$(this).removeAttr('disabled', false)
+	})
+
 </script>

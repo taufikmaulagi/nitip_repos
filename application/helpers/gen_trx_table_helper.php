@@ -10,7 +10,6 @@ function init_table_prof($cycle, $tahun)
         id mediumint unsigned PRIMARY KEY AUTO_INCREMENT,
         dokter mediumint unsigned NOT NULL,
         outlet mediumint unsigned DEFAULT NULL,
-        tempat_praktek smallint(6) DEFAULT NULL,
         produk_grup varchar(10) NOT NULL,
         mr varchar(7) NOT NULL,
         branch smallint UNSIGNED DEFAULT NULL,
