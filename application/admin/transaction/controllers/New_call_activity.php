@@ -229,6 +229,14 @@ class New_call_activity extends BE_Controller {
 
 	function init_call_data(){
 		$id = get('id');
+		$id = get('id');
+		if($id == 'A'){
+			$id = 1;
+		} else if($id == 'B'){
+			$id = 2;
+		} else {
+			$id = 3;
+		}
 		$data = get_data('sub_call_type','call_type',$id)->result_array();
 		render($data, 'json');
 	}

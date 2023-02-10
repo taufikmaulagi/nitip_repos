@@ -1,3 +1,7 @@
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/fixedcolumns/4.2.1/js/dataTables.fixedColumns.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
 <div class="content-header">
 	<div class="main-container position-relative">
 		<div class="header-info d-none d-sm-block">
@@ -111,10 +115,10 @@
 					<div class="card-header">
 						<div class="row">
 							<div class="col-sm-6">
-								History Visit Plan
+								History Marketing Activity
 							</div>
 							<div class="col-sm-6 text-right">
-								<button class="btn btn-fresh btn-sm btn-export"><i class="fa fa-download mr-2"></i> Export </button>
+								<button class="btn btn-fresh btn-sm btn-export"><i class="fa fa-download mr-2"></i> Export</button>
 							</div>
 						</div>
 					</div>
@@ -130,109 +134,150 @@
 	</div>
 </div>
 <?php 
-modal_open('modal-form','Edit Visit Plan');
+modal_open('modal-form','Edit Data Actual','modal-xl');
 modal_body();
-	form_open(base_url('transaction/visit_plan/save'),'post','edit-form');
+	form_open(base_url('transaction/data_marketing/save'),'post','edit-form');
 		col_init(3,9);
 		input('hidden','id','id');
-		label('A. Data Doctor');
-		input('text','Product Group','nama_produk_grup','','','disabled="disabled"');
-		input('text','Doctor','nama_dokter','required','','disabled="disabled"');
-		input('text','Spesialist','nama_spesialist','','','disabled="disabled"');
-		input('text','Outlet','nama_outlet','','','disabled="disabled"');
-		textarea('Note','note','','','disabled="disabled"');
-		label('B. Plan Kunjungan');
-		input('number','Week 1','week1');
-		input('number','Week 2','week2');
-		input('number','Week 3','week3');
-		input('number','Week 4','week4');
-		input('number','Week 5','week5');
-		input('number','Week 6','week6');
-		// if(user('id_group') == MR_ROLE_ID){
-		// 	form_button(lang('simpan'),lang('batal'));
-		// }
+		label('A. Info Dokter');
+		input('text','Dokter','dokter','','','disabled="disabled"');
+		input('text','Spesialist','spesialist','','','disabled="disabled"');
+		input('text','Sub Spesialist','sub_spesialist','','','disabled="disabled"');
+		input('text','Outlet','outlet','','','disabled="disabled"');
+		label('B. Produk');
+		input('text','Produk Group','produk_group','','','disabled="disabled"');
+		echo '<div class="table-responsive"><table class="table table-sm table-hover table-app" style="margin-top:20px; margin-bottom:20px" id="table_indikasi">
+			<thead id="indikasi_box">
+			</thead>
+			<tbody id="indikasi_body">
+			</tbody>
+		</table></div>';
+		// form_button(lang('simpan'),lang('batal'));
 	form_close();
-modal_close();
-
-modal_open('not-approved-form','Approval Profiling','','','bg-danger');
-	modal_body();
-		form_open('javascript:void(0)','post','save_na');
-			col_init(4,8);
-			input('hidden','nid','nid');
-			textarea('Reason Not Approve','nreason','required');
-			form_button(lang('simpan'),lang('batal'));
-		form_close();
+// modal_footer();
 modal_close();
 ?>
 <script type="text/javascript">
 
-	var id_approve = '';
-
 	$('#form-filter').submit(function(e){
 		e.preventDefault();
-		$.ajax({
+		getData();
+		$('#form-edit').attr('action', base_url + 'report/history_marketing_activity/update/'+$('#fbulan').val()+'/'+$('#ftahun').val());
+	});
 
-			url : base_url + 'report/history_visit_plan/data',
-			data : $(this).serialize(),
+	function getData(){
+		var form = $('#form-filter');
+		$.ajax({
+			url : base_url + 'report/history_marketing_activity/data',
+			data : form.serialize(),
 			type : 'post',
 			success : function(r) {
 				document.querySelector('#result').innerHTML = r;
 			}
 		});
-	});
+	}
 
-	$(document).on('dblclick','tbody td .badge',function(){
-		if('<?=user('id_group')?>' != '<?=MR_ROLE_ID?>'){
-			var data_id = $(this).attr('data-id');
-			if($(this).attr('class') == 'badge badge-danger'){
-				id_approve = data_id;
-				cConfirm.open('Apakah mau dikembalikan menjadi approve ?', 'approve');
-			} else {
-				$('#nid').val(data_id);
-				$('#not-approved-form').modal();
-			}
-		}
-	});
-
-	$(document).on('submit','#save_na', function(e){
-		if( $('#nreason').val() != ''){
-			e.preventDefault();
-			$.ajax({
-				url: "<?=base_url('transaction/approval_visit_plan/approval')?>",
-				method: 'post',
-				data: {id: $('#nid').val(),alasan_not_approve: $('#nreason').val()},
-				success: function(resp){
-					if(resp.status==true){
-						cAlert.open('Sudah diubah menjadi Not Approve','success');
-						$('#not-approved-form').modal('toggle');
-						$(this).trigger("reset");
-						$('span[data-id="'+$('#nid').val()+'"]').attr('class','badge badge-danger');
-						$('span[data-id="'+$('#nid').val()+'"]').html('NOT APPROVED');
-					} else {
-						cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-					}
-				}
-			})
-		}
-	});
-
-	function approve(){
+	$(document).on('click','.btn-detail', function(){
+		$(this).html('<i class="fa fa-spinner-third spin"></i>');
+		$(this).attr('disabled','disabled');
+		var id = $(this).attr('data-id');
 		$.ajax({
-			url: '<?=base_url('transaction/approval_visit_plan/approval')?>',
+			url: '<?=base_url()?>'+'report/history_marketing_activity/get_data/',
 			method: 'post',
-			data: {id: id_approve},
-			success: function(resp){
-				if(resp.status==true){
-					cAlert.open('Sudah diubah kembali menjadi approve','success');
-					$('#form-filter').submit();
-					$('span[data-id="'+id_approve+'"]').attr('class','badge badge-success');
-					$('span[data-id="'+id_approve+'"]').html('APPROVED');
-				} else {
-					cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-				}
+			data: {id: id},
+			success: function(r){
+
+				let res_edit = r
+
+				var data_marketing = res_edit.data_actual
+				var marketing = res_edit.marketing
+				var value_marketing = res_edit.value_marketing
+				var persepsi = res_edit.persepsi
+				var sub_marketing = res_edit.sub_marketing
+				var persepsi_sebelum = [];
+				var persepsi_setelah = [];
+
+				$.each(persepsi, function(i, v){
+					if(v.tipe == 'Sebelum'){
+						persepsi_sebelum.push(v);
+					} else {
+						persepsi_setelah.push(v);
+					}
+				})
+
+				$('#id').val(data_marketing.id)
+				$('#dokter').val(data_marketing.nama_dokter)
+				$('#spesialist').val(data_marketing.nama_spesialist)
+				$('#sub_spesialist').val(data_marketing.nama_sub_spesialist)
+				$('#outlet').val((data_marketing.nama_outlet ? data_marketing.nama_outlet : 'Reguler'))
+				$('#tahun').val('<?=strftime('%Y', strtotime(date(get('tahun').'-m-d')))?>')
+				$('#bulan').val('<?=strftime('%B', strtotime(date('Y-'.get('bulan').'-d')))?>')
+				$('#produk_group').val(data_marketing.nama_produk_grup)
+
+				var html_marketing_head = '<th>No.</th><th>Nama</th><th>TYPE</th><th>SUB MARKETING</th><th>TANGGAL ACARA</th><th>SEBAGAI</th><th>NAMA PEMBICARA</th>'
+				var html_marketing = ''
+				$.each(marketing, function(i, v){
+
+					var curret_sub = [];
+					$.each(sub_marketing, function(is,vs){
+						if(v.id == vs.marketing_aktifitas){
+							curret_sub.push(vs);
+						}
+					})
+
+					var value_tipe = '';
+					var value_sub = '';
+					var value_tanggal = '';
+					var value_persepsi_sebelum = '';
+					var value_persepsi_setelah = '';
+					var value_sebagai = '';
+					var value_nama_pembicara = '';
+
+					$.each(value_marketing, function(iv, vv){
+						if(vv.marketing_aktifitas == v.id){
+							value_tipe = vv.tipe
+							value_sub = vv.sub_marketing_aktifitas
+							value_tanggal = vv.tanggal
+							value_persepsi_sebelum = vv.persepsi_sebelum
+							value_persepsi_setelah = vv.persepsi_setelah
+							value_sebagai = vv.sebagai
+							value_nama_pembicara = vv.nama_pembicara
+						}
+					})
+					var html_sub_marketing = '<option value=""> -- </option>';
+					$.each(curret_sub, function(ic,vc){
+						html_sub_marketing += '<option value="'+vc.id+'" '+(value_sub == vc.id ? 'selected="selected"' : '')+'>'+vc.nama+'</option>';
+					})
+					
+					var html_sebagai = '<option value=""> -- </option>'+
+										'<option value="Pembicara" '+(value_sebagai == "Pembicara" ? 'selected="selected"' : '')+'>Pembicara</option>'+
+										'<option value="Peserta" '+(value_sebagai == "Peserta" ? 'selected="selected"' : '')+'>Peserta</option>';
+
+					html_marketing += '<tr>'+
+						'<td>'+(i+1)+'</td><td>'+v.nama+'</td>'+
+						'<td><select class="form-control" name="type|'+v.id+'"><option value=""> -- </option><option value="Online" '+(value_tipe == 'Online' ? 'selected="selected"' : '')+'>ONLINE</option><option value="Offline" '+(value_tipe == 'Offline' ? 'selected="selected"' : '')+'>OFFLINE</option></select></td>'+
+						'<td><select class="form-control" name="sub|'+v.id+'">'+html_sub_marketing+'<select></td><td>'+
+						'<input type="date" class="form-control" name="tanggal|'+v.id+'" value="'+value_tanggal+'"></td>'+
+						'<td><select class="form-control" name="sebagai|'+v.id+'">'+html_sebagai+'<select></td>'+
+						'<td><input type="text" class="form-control" name="nama_pembicara|'+v.id+'" value="'+value_nama_pembicara+'"></td>'+
+					'</tr>'
+				})
+				
+				$('#indikasi_body').html(html_marketing)
+				$('#indikasi_box').html(html_marketing_head)
+				$('#modal-form').modal();
+				$('.btn-detail').html('<i class="fa fa-search"></i>');
+				$('.btn-detail').removeAttr('disabled');
 			}
 		})
-	}
+	});
+
+	$('#produk_grup').on('change', function() {
+		var tpgroup = $(this).val();
+
+		init_indikasi(tpgroup);
+		init_additional(tpgroup);
+	});
 	
 	$(document).ready(function(){
 		var fteam = $('#fteam').val();
@@ -257,7 +302,7 @@ modal_close();
 
 	function get_am(team){
 		$.ajax({
-			url: base_url+'report/history_visit_plan/get_am?team='+team,
+			url: base_url+'report/history_marketing_activity/get_am?team='+team,
 			success: function(resp){
 				var html_am = '';
 				$('#fam').html('');
@@ -272,7 +317,7 @@ modal_close();
 
 	function get_mr(team, am){
 		$.ajax({
-			url: base_url+'report/history_visit_plan/get_mr?team='+team+'&am='+am,
+			url: base_url+'report/history_marketing_activity/get_mr?team='+team+'&am='+am,
 			success: function(resp){
 				var html_am = '';
 				$('#fmr').html('');
@@ -284,41 +329,18 @@ modal_close();
 		});
 	}
 
-	$(document).on('click','.btn-detail', function(){
-		$(this).html('<i class="fa fa-spinner-third spin"></i>')
-		$(this).attr('disabled', true)
-		$.ajax({
-			url: '<?=base_url('report/history_visit_plan/get_data/')?>'+$('#fbulan').val()+'/'+$('#ftahun').val(),
-			type: 'post',
-			data: {id: $(this).attr('data-id')},
-			success: function(resp){
-				$('#id').val(resp.id);
-				$('#nama_produk_grup').val(resp.nama_produk_group);
-				$('#nama_dokter').val(resp.nama_dokter);
-				$('#nama_spesialist').val(resp.nama_spesialist);
-				$('#nama_outlet').val(resp.nama_outlet);
-				$('#note').val(resp.note);
-				$('#week1').val(resp.week1);
-				$('#week2').val(resp.week2);
-				$('#week3').val(resp.week3);
-				$('#week4').val(resp.week4);
-				$('#week5').val(resp.week5);
-				$('#week6').val(resp.week6);
-
-				$('.btn-detail').html('<i class="fa fa-search"></i>')
-				$('.btn-detail').removeAttr('disabled');
-				$('#modal-form').modal();	
-			}
-		})
-	});
-
-	$(document).on('click','.btn-export',function(){
+	$(document).on('click', '.btn-export', function(){
+		let produk_group = $('#fpgroup').val()
+		let mr = $('#fmr').val()
 		let bulan = $('#fbulan').val()
 		let tahun = $('#ftahun').val()
-		let mr = $('#fmr').val()
-		let produk_grup = $('#fpgroup').val()
 
-		location.href = base_url + 'report/history_visit_plan/export?bulan='+bulan+'&tahun='+tahun+'&mr='+mr+'&produk_group='+produk_grup
+		$(this).html('<i class="fa fa-spinner-third spin mr-2"></i> Loading')
+		$(this).attr('disabled',true)
+		location.href = base_url + 'report/history_marketing_activity/export?mr='+mr+'&tahun='+tahun+'&produk_group='+produk_group+'&bulan='+bulan
+
+		$(this).html('<i class="fa fa-download mr-2"></i> Export')
+		$(this).removeAttr('disabled', false)
 	})
 
 </script>

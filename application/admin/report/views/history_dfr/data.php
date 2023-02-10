@@ -1,4 +1,4 @@
-<?php if (!empty($dfr)) : ?>
+<?php if (!empty($data)) : ?>
     <style>
         .bg-yellow {
             background-color: #f5ea92 !important;
@@ -10,17 +10,18 @@
                 <th>#</th>
                 <th>Tanggal</th>
                 <th>Dokter</th>
+                <th>Spesialist</th>
                 <th>Call Type</th>
                 <th></th>
             </thead>
             <tbody>
                 <?php $index = 1;
-                foreach ($dfr as $val) : ?>
+                foreach ($data as $val) : ?>
                     <tr>
                         <td style="width: 1px; white-space:nowrap;"><?= $index++ ?></td>
                         <td style="width: 1px; white-space:nowrap;"><?=strftime('%e %B %Y', strtotime($val['cat']))?></td>
                         <td><?=$val['nama_dokter']?></td>
-    
+                        <td><?=$val['nama_spesialist']?></td>
                         <td><?php 
                             if($val['call_type'] == '1'){
                                 echo 'A DFR';

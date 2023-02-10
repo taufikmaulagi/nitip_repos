@@ -110,7 +110,16 @@
 			</div>
 			<div class="col-md-9">
 				<div class="card">
-					<div class="card-header">History DFR</div>
+					<div class="card-header">
+						<div class="row">
+							<div class="col-sm-6">
+								History DFR
+							</div>
+							<div class="col-sm-6 text-right">
+								<button class="btn btn-fresh btn-sm btn-export"><i class="fa-download mr-2"></i> Export</button>
+							</div>
+						</div>
+					</div>
 					<div class="card-body" style="margin: 0; padding:0" id="result">
 						<div class="text-center">
 							<img src="<?= base_url('assets/images/no-data.svg') ?>" width="40%">
@@ -198,9 +207,9 @@ if ($this->db->table_exists('trxvisit_' . date('Y') . '_' . date('m'))) {
 	echo '<hr/>';
 	if (user('id_group') == MR_ROLE_ID) {
 		select2('Call Type', 'call_type', '', [
-			['id' => 1, 'nama' => 'A DFR'],
-			['id' => 2, 'nama' => 'B Short Detailing'],
-			['id' => 3, 'nama' => 'C Happy Call'],
+			['id' => 'A', 'nama' => 'A DFR'],
+			['id' => 'B', 'nama' => 'B Short Detailing'],
+			['id' => 'C', 'nama' => 'C Happy Call'],
 		], 'id', 'nama', '', 'disabled="disabled"');
 		select2('Sub Call Type', 'sub_call_type', '', '', '', '', '', 'disabled="disabled"');
 	} else {
@@ -210,9 +219,9 @@ if ($this->db->table_exists('trxvisit_' . date('Y') . '_' . date('m'))) {
 		input('hidden', 'tahun', 'tahun');
 		input('hidden', 'bulan', 'bulan');
 		select2('Call Type', 'call_type', '', [
-			['id' => 1, 'nama' => 'A DFR'],
-			['id' => 2, 'nama' => 'B Short Detailing'],
-			['id' => 3, 'nama' => 'C Happy Call'],
+			['id' => 'A', 'nama' => 'A DFR'],
+			['id' => 'B', 'nama' => 'B Short Detailing'],
+			['id' => 'C', 'nama' => 'C Happy Call'],
 		], 'id', 'nama');
 		select2('Sub Call Type', 'sub_call_type', '', '', '', '', '', 'disabled="disabled"');
 		select('Penilaian OPSS', 'penilaian', 'required', [
@@ -329,59 +338,6 @@ modal_close();
 			$('#alasan_belum_sesuai').attr('data-validation', '');
 		}
 	})
-
-	// $(document).on('dblclick','tbody td .badge',function(){
-	// 	if('<?= user('id_group') ?>' == '<?= AM_ROLE_ID ?>'){
-	// 		var data_id = $(this).attr('data-id');
-	// 		if($(this).attr('class') == 'badge badge-danger'){
-	// 			id_approve = data_id;
-	// 			cConfirm.open('Apakah mau dikembalikan menjadi approve ?', 'approve');
-	// 		} else {
-	// 			$('#nid').val(data_id);
-	// 			$('#not-approved-form').modal();
-	// 		}
-	// 	}
-	// });
-
-	// $(document).on('submit','#save_na', function(e){
-	// 	if( $('#nreason').val() != ''){
-	// 		e.preventDefault();
-	// 		$.ajax({
-	// 			url: "<?= base_url('transaction/approval_visit_plan/approval') ?>",
-	// 			method: 'post',
-	// 			data: {id: $('#nid').val(),alasan_not_approve: $('#nreason').val()},
-	// 			success: function(resp){
-	// 				if(resp.status==true){
-	// 					cAlert.open('Sudah diubah menjadi Not Approve','success');
-	// 					$('#not-approved-form').modal('toggle');
-	// 					$(this).trigger("reset");
-	// 					$('span[data-id="'+$('#nid').val()+'"]').attr('class','badge badge-danger');
-	// 					$('span[data-id="'+$('#nid').val()+'"]').html('NOT APPROVED');
-	// 				} else {
-	// 					cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-	// 				}
-	// 			}
-	// 		})
-	// 	}
-	// });
-
-	// function approve(){
-	// 	$.ajax({
-	// 		url: '<?= base_url('transaction/approval_visit_plan/approval') ?>',
-	// 		method: 'post',
-	// 		data: {id: id_approve},
-	// 		success: function(resp){
-	// 			if(resp.status==true){
-	// 				cAlert.open('Sudah diubah kembali menjadi approve','success');
-	// 				$('#form-filter').submit();
-	// 				$('span[data-id="'+id_approve+'"]').attr('class','badge badge-success');
-	// 				$('span[data-id="'+id_approve+'"]').html('APPROVED');
-	// 			} else {
-	// 				cAlert.open('Oops! Ada kesalahan. Silahkan coba lagi.', 'error');
-	// 			}
-	// 		}
-	// 	})
-	// }
 
 	$(document).ready(function() {
 		var fteam = $('#fteam').val();
@@ -577,8 +533,6 @@ modal_close();
 				$('#sub_call_type').html(html_sub_call_type);
 			},
 			complete: function() {
-				// console.log(data_tmp);
-				// alert($(this).val())
 				if (id == 1) {
 					$('#mr_talk').attr('data-validation', 'required')
 					$('#feedback_dokter').attr('data-validation', 'required')
@@ -597,11 +551,11 @@ modal_close();
 					$('#sub_call_type').val(data_tmp.sub_call_type).trigger('change')
 					data_tmp.sub_call_type = '';
 				} else {
-					if (id == 1) {
+					if (id == 'A') {
 						$('#sub_call_type').val(1).trigger('change')
-					} else if (id == 2) {
+					} else if (id == 'B') {
 						$('#sub_call_type').val(5).trigger('change')
-					} else if (id == 3) {
+					} else if (id == 'C') {
 						$('#sub_call_type').val(11).trigger('change')
 					}
 				}
@@ -635,10 +589,11 @@ modal_close();
 
 	$(document).on('click', '.btn-detail', function() {
 		var id = $(this).attr('data-id')
+		$('#tahun').val($('#ftahun').val())
+		$('#bulan').val($('#fbulan').val())
 		$.ajax({
 			url: base_url + 'report/history_dfr/get_data/' + $('#fbulan').val() + '/' + $('#ftahun').val() + '?id=' + id,
 			success: function(resp) {
-				console.log(resp);
 				var data = resp
 				data_tmp = {
 					dokter: data.dokter,
@@ -649,9 +604,8 @@ modal_close();
 					key_message: data.key_message,
 					sub_call_type: data.sub_call_type,
 				}
+				
 				$('#id').val(data.id)
-				$('#tahun').val($('#ftahun').val())
-				$('#bulan').val($('#fbulan').val())
 				$('#produk_grup').val(data.produk_grup).trigger('change')
 				$('#spesialist').val(data.nama_spesialist)
 				$('#dokter').val(data.dokter).trigger('change')
@@ -690,5 +644,15 @@ modal_close();
 				$('#modal-form').modal()
 			}
 		})
+	})
+
+	$(document).on('click', '.btn-export', function(){
+		let tahun = $('#ftahun').val()
+		let bulan = $('#fbulan').val()
+		let produk_group = $('#fpgroup').val()
+		let mr = $('#fmr').val()
+
+		location.href = base_url + 'report/history_dfr/export?tahun='+tahun+'&bulan='+bulan+'&produk_group='+produk_group+'&mr='+mr
+		
 	})
 </script>

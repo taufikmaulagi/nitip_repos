@@ -46,6 +46,9 @@ class Visit_plan extends BE_Controller {
 				'spesialist d on d.id = c.spesialist',
 				'outlet e on e.id = b.outlet'
 			],
+			'where' => [
+				'produk_grup' => get('group')
+			],
 			'access_view' => false,
 			'access_delete' => false,
 		];

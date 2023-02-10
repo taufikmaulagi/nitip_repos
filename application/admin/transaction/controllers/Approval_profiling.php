@@ -153,7 +153,9 @@ class Approval_profiling extends BE_Controller {
 		$profiling = get_data('trxprof_'.$tahun.'_'.$cycle.' a', [
 			'select' => 'a.*, c.id as spesialist',
 			'where' => [
-				'a.status' => ['WAITING','APPROVED']
+				'a.status' => ['WAITING','APPROVED'],
+				'a.produk_grup' => $pgrup,
+				'a.mr' => $mr
 			],
 			'join' => [
 				'dokter b on a.dokter = b.id',

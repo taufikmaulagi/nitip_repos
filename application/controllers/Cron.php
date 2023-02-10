@@ -36,94 +36,43 @@ class Cron extends MY_Controller {
         }
     }
 
-
-    function sync_prof_kosong(){
-
-		ini_set('memomry_limit',-1);
-		ini_set('max_execution_time', -1);
+	function generate_rekap_call_activity(){
+		
+		ini_set('memory_limit', -1);
 
 		$bulan = date('m');
-		$table 			= 'trxprof_'.date('Y').'_'.active_cycle();
-		$table_indikasi = 'trxprof_indikasi_'.date('Y').'_'.active_cycle();
-		$this->db->having('total_indikasi > 0');
-		$profiling = get_data($table.' a', [
-			'select' => 'a.*, b.*, (b.val_indikasi_1+b.val_indikasi_2+b.val_indikasi_3+b.val_indikasi_4+b.val_indikasi_5+b.val_indikasi_6+b.val_indikasi_7+b.val_indikasi_8+b.val_indikasi_9+b.val_indikasi_10) as total_indikasi',
-			'join'	 => [
-				$table_indikasi.' b on a.id = b.profiling and bulan = '.$bulan.' type left'
+		$tahun = date('Y');
+		$cycle = cycle_by_month($bulan);
+
+		if(!table_exists('rekap_call_activity_'.$tahun)){
+			$this->load->helper('gen_report_table');
+			init_table_rekap_call_activity($tahun, $bulan);
+		}
+
+		$data = get_data('trxvisit_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'b.mr, d.id as id_dokter, s.id as id_spesialist, o.id as id_outlet, ss.id as id_sub_spesialist, d.nama as nama_dokter, s.nama as nama_spesialist, ss.nama as nama_sub_spesialist, o.nama as nama_outlet, (week1+week2+week3+week4+week5+week6) as plan_call, count(if(e.status = "SENT", 1, 0)) as actual_call, IF((week1+week2+week3+week4+week5+week6) > 0, 1, 0) as dc_plan, IF(COUNT(IF(e.status = "SENT", 1, 0)) > 0, 1, 0) as dc_actual, IF((week1+week2+week3+week4+week5+week6) > 0, 1, 0) as pc_plan, IF((week1+week2+week3+week4+week5+week6) = COUNT(IF(e.status = "SENT", 1, 0)), 1, 0) as pc_actual',
+			'join' => [
+				'trxprof_'.$tahun.'_'.$cycle.' b on a.profiling = b.id',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'sub_spesialist ss on ss.id = d.subspesialist type left',
+				'outlet o on o.id = b.outlet',
+				'trxdfr_'.$tahun.'_'.$bulan.' e on e.visit_plan = a.id type left'
 			],
 			'where' => [
-			   //      'a.mr' => ['02553','02517','03293']
-			]
-			// 'where' => [
-			// 	'a.mr'	=> '02357'
-			// ]
+				'a.status' => 'APPROVED'
+			],
+			'group_by' => 'd.id, o.id'
 		])->result_array();
-		// echo count($profiling); die;
-		$data_insert = 0;
-		foreach($profiling as $v){
-            $cycle = active_cycle();
-            $tahun = date('Y');
-            if($bulan == '01'){
-                $tahun--;
-                $cycle = 3;
-            } else if($bulan == '05'){
-                $cycle = 1;
-            } else if($bulan == '09'){
-                $cycle = 2;
-            }
-			$table_indikasi_lama = 'trxprof_indikasi_'.$tahun.'_'.$cycle;
-			// $val_indikasi_1 = $v['val_indikasi_1'];
-			// $val_indikasi_2 = $v['val_indikasi_2'];
-			// $val_indikasi_3 = $v['val_indikasi_3'];
-			// $val_indikasi_4 = $v['val_indikasi_4'];
-			// $val_indikasi_5 = $v['val_indikasi_5'];
-			// $val_indikasi_6 = $v['val_indikasi_6'];
-			// $val_indikasi_7 = $v['val_indikasi_7'];
-			// $val_indikasi_8 = $v['val_indikasi_8'];
-			// $val_indikasi_9 = $v['val_indikasi_9'];
-			// $val_indikasi_10 = $v['val_indikasi_10'];
-			$total_indikasi = 0;
-			if($total_indikasi <= 0){
-				$prev_prof = get_data('trxprof_'.$tahun.'_'.$cycle.' a', [
-					'join'	=> [
-						$table_indikasi_lama.' b on a.id = b.profiling and bulan = "'.(date('m') == '01' ? 12 : (sprintf('%02s',intval(date('m')-1)))).'"'
-					],
-					'where' => [
-						'a.dokter' => $v['dokter'],
-						'a.mr' => $v['mr'],
-						'a.produk_grup' => $v['produk_grup'],
-						'a.outlet' => $v['outlet'],
-					]
-				])->row_array();
-				if($prev_prof){
-					$data_insert++;
-					delete_data($table_indikasi, [
-						'profiling' => $v['id'],
-						'bulan' => $bulan
-					]);
-					insert_data($table_indikasi, [
-						'profiling' => $v['id'],
-						'bulan' => $bulan,
-						'val_indikasi_1' => $prev_prof['val_indikasi_1'],
-						'val_indikasi_2' => $prev_prof['val_indikasi_2'],
-						'val_indikasi_3' => $prev_prof['val_indikasi_3'],
-						'val_indikasi_4' => $prev_prof['val_indikasi_4'],
-						'val_indikasi_5' => $prev_prof['val_indikasi_5'],
-						'val_indikasi_6' => $prev_prof['val_indikasi_6'],
-                        'val_indikasi_7' => $prev_prof['val_indikasi_7'],
-                        'val_indikasi_8' => $prev_prof['val_indikasi_8'],
-                        'val_indikasi_9' => $prev_prof['val_indikasi_9'],
-                        'val_indikasi_10' => $prev_prof['val_indikasi_10'],
-						'potensi_tablet' => $prev_prof['val_indikasi_1'] + $prev_prof['val_indikasi_2'] + $prev_prof['val_indikasi_3'] + $prev_prof['val_indikasi_4'] + $prev_prof['val_indikasi_5'] + $prev_prof['val_indikasi_6'] + $prev_prof['val_indikasi_7'] + $prev_prof['val_indikasi_8'] + $prev_prof['val_indikasi_9'] + $prev_prof['val_indikasi_10'],
-						'jumlah_pasien'	=> $prev_prof['val_indikasi_1'] + $prev_prof['val_indikasi_2'] + $prev_prof['val_indikasi_3'] + $prev_prof['val_indikasi_4'] + $prev_prof['val_indikasi_5'] + $prev_prof['val_indikasi_6'] + $prev_prof['val_indikasi_7'] + $prev_prof['val_indikasi_8'] + $prev_prof['val_indikasi_9'] + $prev_prof['val_indikasi_10'],
-						'fee_patient' =>  $prev_prof['fee_patient'],
-						'ap_original' => $prev_prof['ap_original'],
-					]);
-				}
-			}
+
+		$counter = 0;
+		
+		delete_data('rekap_call_activity_'.$tahun, 'bulan', date('m'));
+		foreach($data as $v){
+			$insert = insert_data('rekap_call_activity_'.$tahun, $v);
 		}
-		// echo json_encode($profiling);
-		echo 'Data			: '.count($profiling).'<br>';
-		echo 'Data insert 	: '.$data_insert.'<br/>';
+		
+		echo 'Good Job';
+
 	}
 }

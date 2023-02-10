@@ -1,4 +1,4 @@
-<?php if (!empty($visit_plan)) : ?>
+<?php if (!empty($data)) : ?>
     <div class="table-responsive">
         <table class="table table-bordered table-app">
             <thead>
@@ -19,7 +19,7 @@
             <tbody>
                 <?php $index = 1;
                 $total_plan = 0;
-                foreach ($visit_plan as $val) :
+                foreach ($data as $val) :
                     $total_plan += intval($val['plan_call']);
                 ?>
                     <tr>
@@ -36,10 +36,14 @@
                         <td class="text-center"><?= $val['plan_call']?></td>
                         <td>
                             <?php
-                                if($val['status'] == '3'){
+                                if($val['status'] == 'APPROVED'){
                                     echo '<span class="badge badge-success" data-id="'.$val['id'].'">APPROVED</span>';
+                                } else if($val['status'] == 'WAITING'){
+                                    echo '<span class="badge badge-warning" data-id="'.$val['id'].'">WAITING</span>';
+                                } else if($val['status'] == 'REVISION'){
+                                    echo '<span class="badge badge-warning" data-id="'.$val['id'].'">WAITING</span>';
                                 } else {
-                                    echo '<span class="badge badge-success" data-id="'.$val['id'].'">NOT APPROVED</span>';
+                                    echo '<span class="badge badge-danger" data-id="'.$val['id'].'">NOT APPROVED</span>';
                                 }
                             ?>
                         </td>

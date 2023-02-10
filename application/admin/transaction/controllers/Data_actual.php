@@ -87,8 +87,7 @@ class Data_actual extends BE_Controller
 		render($data, 'json');
 	}
 
-	function get_data()
-	{
+	function get_data(){
 		$bulan = $this->session->userdata('dact_bulan');
 		$tahun = $this->session->userdata('dact_tahun');
 		$cycle = cycle_by_month($bulan);

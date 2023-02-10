@@ -121,6 +121,16 @@ function init_table_prof($cycle, $tahun)
             dat datetime DEFAULT NULL
             ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4;'
         );
+
+        $ci = &get_instance();
+        $ci->db->query('CREATE TABLE trxdfr_feedback_' . $tahun . '_' . $bulan . ' (
+            dfr mediumint unsigned not null,
+            id_group tinyint unsigned not null,
+            user int unsigned not null,
+            penilaian varchar(50) not null,
+            alasan_belum_sesuai varchar(150) default null,
+            cat datetime default current_timestamp
+        )');
     }
 
     function init_table_data_actual($tahun, $bulan)

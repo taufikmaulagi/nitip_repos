@@ -1,4 +1,8 @@
-<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+<?php
+
+use function PHPSTORM_META\map;
+
+ if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
 class History_dfr extends BE_Controller {
 
@@ -16,32 +20,35 @@ class History_dfr extends BE_Controller {
 		
 		$tahun = post('ftahun');
 		$bulan = post('fbulan');	
+		$produk_group = post('fpgroup');
+		$mr = post('fmr');
+		$cycle = cycle_by_month($bulan);
 
-		if($this->db->table_exists('trxdfr_'.$tahun.'_'.$bulan)){
-			if(!$this->db->table_exists('trxdfr_feedback_'.$tahun.'_'.$bulan)){
-				$this->load->helper('generate_trx_table');
-				init_table_dfr_feedback($tahun, $bulan);
-			}
-			$data['dfr'] = get_data('trxdfr_'.$tahun.'_'.$bulan, [
-				'select' => 'trxdfr_'.$tahun.'_'.$bulan.'.*, trxdfr_feedback_'.$tahun.'_'.$bulan.'.penilaian',
-				'where' => [
-					'produk_grup' => post('fpgroup'),
-					'mr' => post('fmr'),
-					'status' => 2,
-				],
-				'join' => [
-					'trxdfr_feedback_'.$tahun.'_'.$bulan.' on trxdfr_feedback_'.$tahun.'_'.$bulan.'.dfr = trxdfr_'.$tahun.'_'.$bulan.'.id type left'
-				],
-				'sort_by' => 'trxdfr_'.$tahun.'_'.$bulan.'.cat',
-				'sort' => 'ASC',
-				'group_by' => 'trxdfr_'.$tahun.'_'.$bulan.'.id'
-			])->result_array();
-			// debug($data['dfr']); die;
-		}
+		$data = get_data('trxdfr_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'a.*, d.nama as nama_dokter, s.nama as nama_spesialist, e.penilaian',
+			'join' => [
+				'trxvisit_'.$tahun.'_'.$bulan.' b on a.visit_plan = b.id',
+				'trxprof_'.$tahun.'_'.$cycle.' c on c.id = b.profiling',
+				'dokter d on d.id = c.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'trxdfr_feedback_'.$tahun.'_'.$bulan.' e on e.dfr = a.id type left'
+			],
+			'where' => [
+				'c.produk_grup' => $produk_group,
+				'c.mr' => $mr,
+				'a.status' => 'SENT'
+			],
+			'order_by_array' => [
+				'a.tanggal' => 'desc',
+				'd.nama' => 'asc',
+				'e.cat' => 'desc'
+			]
+ 		])->result_array();
 
-		render($data,'layout:false');
+		render([
+			'data' => $data
+		],'layout:false');
 	}
-	
 
 	function get_all($cycle, $tahun, $mr){
 		$profiling = get_data('trxprof_'.$tahun.'_'.$cycle,[
@@ -87,15 +94,17 @@ class History_dfr extends BE_Controller {
 		}
 
 		$dokter = get_data($table_visit_plan.' a', [
-			'select' => 'a.*, b.nama_spesialist, b.channel_outlet, c.customer_matrix,  c.customer_matrix_rexulti,  c.customer_matrix_maintena',
+			'select' => 'a.*, s.nama as nama_spesialist, b.channel_outlet, c.customer_matrix',
 			'join' => [
 				$table_profiling.' b on b.id = a.profiling',
-				$table_data_actual.' c on c.dokter = a.dokter type left'
+				$table_data_actual.' c on c.visit_plan = a.id type left',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist'
 			],
 			'where' => [
-				'a.status' => 3,
-				'a.mr' => $mr,
-				'a.dokter' => $dokter
+				'a.status' => 'APPROVED',
+				'b.mr' => $mr,
+				'b.dokter' => $dokter
 			],
 		])->row_array();
 
@@ -103,13 +112,23 @@ class History_dfr extends BE_Controller {
 	}
 	
 	function get_data($bulan, $tahun) {	
-		$data = get_data('trxdfr_'.$tahun.'_'.$bulan,[
+		$id = get('id');
+		$cycle = cycle_by_month($bulan);
+
+		$data = get_data('trxdfr_'.$tahun.'_'.$bulan.' a',[
+			'select' => 'a.*, c.dokter, c.produk_grup, d.nama as nama_dokter, s.nama as nama_spesialist, p.nama as nama_produk_grup, o.nama as nama_outlet, p.nama as nama_produk_grup',
 			'join' => [
-				'trxdfr_feedback_'.$tahun.'_'.$bulan.' on trxdfr_feedback_'.$tahun.'_'.$bulan.'.dfr = trxdfr_'.$tahun.'_'.$bulan.'.id and trxdfr_feedback_'.$tahun.'_'.$bulan.'.user = '.user('id').' type left'
+				'trxvisit_'.$tahun.'_'.$bulan.' b on a.visit_plan = b.id',
+				'trxprof_'.$tahun.'_'.$cycle.' c on c.id = b.profiling',
+				'dokter d on d.id = c.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'produk_grup p on p.kode = c.produk_grup',
+				'outlet o on o.id = c.outlet',
+				'trxdfr_feedback_'.$tahun.'_'.$bulan.' e on e.dfr = a.id and e.id_group = '.user('id_group').' and e.user = '.user('id').' type left',
 			],
 			'where' => [
-				'trxdfr_'.$tahun.'_'.$bulan.'.id' => get('id'),
-			]
+				'a.id' => $id
+			],
 		])->row_array();
 		render($data,'json');
 	}
@@ -130,6 +149,13 @@ class History_dfr extends BE_Controller {
 
 	function init_call_data(){
 		$id = get('id');
+		if($id == 'A'){
+			$id = 1;
+		} else if($id == 'B'){
+			$id = 2;
+		} else {
+			$id = 3;
+		}
 		$data = get_data('sub_call_type','call_type',$id)->result_array();
 		render($data, 'json');
 	}
@@ -237,13 +263,18 @@ class History_dfr extends BE_Controller {
 
 	function init_data($bulan, $tahun, $mr){
 		$id_produk_grup = post('produk_grup');
-		$visit_plan = get_data('trxvisit_'.$tahun.'_'.$bulan, [
-			'select' => 'dokter as id, nama_dokter as nama',
+		$cycle = cycle_by_month($bulan);
+
+		$visit_plan = get_data('trxvisit_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'b.dokter as id, d.nama as nama',
+			'join' => [
+				'trxprof_'.$tahun.'_'.$cycle.' b on a.profiling = b.id',
+				'dokter d on d.id = b.dokter'
+			],
 			'where' => [
-				'produk_grup' => $id_produk_grup,
-				'mr' => $mr,
-				'status' => 3,
-				'appvr_at != '=> NULL,
+				'b.produk_grup' => $id_produk_grup,
+				'b.mr' => $mr,
+				'a.status' => 'APPROVED',
 			]
 		])->result_array();
 
@@ -284,11 +315,7 @@ class History_dfr extends BE_Controller {
 
 	function update(){
 		$data = post();
-		if(!$this->db->table_exists('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'])){
-			$this->load->helper('generate_trx_table');
-			init_table_dfr_feedback($data['tahun'], $data['bulan']);
-		}
-
+		
 		$feedback = get_data('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'], [
 			'where' => [
 				'user' 	=> user('id'),
@@ -310,11 +337,11 @@ class History_dfr extends BE_Controller {
 		]);
 		$dfr = get_data('trxdfr_'.$data['tahun'].'_'.$data['bulan'], 'id', $data['id'])->row_array();
 		if($dfr['call_type'] != $data['call_type']){
-			if($data['call_type'] == 1){
+			if($data['call_type'] == 'A'){
 				$sub_call_type = 1;
-			} elseif($data['call_type'] == 2) {
+			} elseif($data['call_type'] == 'B') {
 				$sub_call_type = 5;
-			} elseif($data['call_type'] == 3) {
+			} elseif($data['call_type'] == 'C') {
 				$sub_call_type = 11;
 			}
 			update_data('trxdfr_'.$data['tahun'].'_'.$data['bulan'], [
@@ -329,6 +356,79 @@ class History_dfr extends BE_Controller {
 		];
 
 		render($response, 'json');
+	}
+
+	function export(){
+		$tahun = get('tahun');
+		$bulan = get('bulan');
+		$mr = get('mr');
+		$produk_group = get('produk_group');
+		$cycle = cycle_by_month($bulan);
+		$data_mr = get_data('tbl_user', 'username', $mr)->row_array();
+
+		$data_dfr = get_data('trxdfr_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'd.nama as nama_dokter, s.nama as nama_spesialist, pr.nama as nama_produk, o.nama as nama_outlet, channel_outlet, kd.nama as nama_kompetitor, circumstances, call_object, i.nama as nama_indikasi, km.nama as nama_key_message, mr_talk, mr_talk2, mr_talk3, feedback_status, feedback_dokter, feedback_dokter2, feedback_dokter3, next_action, p2.nama as nama_produk2, p3.nama as nama_produk3, a.call_type, sc.nama as nama_sub_call_type',
+			'join' => [
+				'trxvisit_'.$tahun.'_'.$bulan.' b on a.visit_plan = b.id',
+				'trxprof_'.$tahun.'_'.$cycle.' c on c.id = b.profiling',
+				'dokter d on d.id = c.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'outlet o on o.id = c.outlet',
+				'kompetitor_diresepkan kd on kd.id = a.kompetitor_diresepkan',
+				'indikasi i on i.id = a.indikasi',
+				'key_message km on km.id = a.key_message',
+				'produk_grup p on p.kode = c.produk_grup',
+				'produk_grup p2 on p2.kode = a.produk2 type left',
+				'produk_grup p3 on p3.kode = a.produk3 type left',
+				'sub_call_type sc on sc.id = a.sub_call_type type left',
+				'produk pr on pr.id = a.produk'
+			],
+			'where' => [
+				'c.mr' => $mr,
+				'c.produk_grup' => $produk_group
+			]
+		])->result_array();
+
+		$data = [];
+		foreach($data_dfr as $k => $v){
+			$v['no'] = $k + 1;
+			$data[] = $v;
+		}
+
+		$header = [
+			'no' => 'No.',
+			'nama_dokter' => 'Dokter',
+			'nama_spesialist' => 'Spesialist',
+			'nama_outlet' => 'Outlet',
+			'channel_outlet' => 'Channel Outlet',
+			'nama_produk' => 'Produk',
+			'call_type' => 'Call Type',
+			'nama_sub_call_type' => 'Sub Call Type',
+			'nama_kompetitor' => 'Kompetitor',
+			'circumstances' => 'Circumstances',
+			'call_object' => 'Call Objective',
+			'nama_indikasi' => 'Indikasi',
+			'nama_key_message' => 'Key Message',
+			'mr_talk' => 'MR Talk',
+			'mr_talk2' => 'MR Talk 2',
+			'mr_talk3' => 'MR Talk 3',
+			'feedback_status' => 'Feedback Status',
+			'feedback_dokter' => 'Feedback Dokter',
+			'feedback_dokter2' => 'Feedback Dokter 2',
+			'feedback_dokter3' => 'Feedback Dokter 3',
+			'next_action' => 'Next Action Plan',
+			'nama_produk2' => 'Produk 2',
+			'nama_produk3' => 'Produk 3',
+		];
+
+		$config = [
+			'title' => 'DFR '.explode(' ',$data_mr['nama'])[0].' '.$tahun.'-'.$bulan,
+			'data' => $data,
+			'header' => $header,
+		];
+		$this->load->library('simpleexcel', $config);
+		$this->simpleexcel->export();
+
 	}
 
 }

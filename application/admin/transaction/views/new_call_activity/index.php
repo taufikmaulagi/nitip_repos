@@ -62,9 +62,9 @@ modal_open('modal-form','New Call Activity','modal-xl','style="position:absolute
 						echo '</div>';
 						echo '<div id="send_box" style="display:none">';
 							select2('Call Type','call_type','',[
-								['id' => 1, 'nama' => 'A DFR'],
-								['id' => 2, 'nama' => 'B Short Detailing'],
-								['id' => 3, 'nama' => 'C Happy Call'],
+								['id' => 'A', 'nama' => 'A DFR'],
+								['id' => 'B', 'nama' => 'B Short Detailing'],
+								['id' => 'C', 'nama' => 'C Happy Call'],
 							],'id','nama');
 							select2('Sub Call Type','sub_call_type');
 							textarea('MR Talk','mr_talk');
@@ -349,7 +349,6 @@ modal_close();
 				$('#sub_call_type').html(html_sub_call_type);
 			},
 			complete: function(){
-				// alert($(this).val())
 				if(id == 1){
 					$('#mr_talk').attr('data-validation','required');
 					$('#feedback_dokter').attr('data-validation','required');

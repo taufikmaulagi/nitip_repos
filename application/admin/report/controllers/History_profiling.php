@@ -93,8 +93,7 @@ class History_profiling extends BE_Controller
 		render($data, 'json');
 	}
 
-	function get_mr()
-	{
+	function get_mr(){
 		$where = [
 			'history_organogram.kode_team' => get('team'),
 			'n_am' => get('am'),
@@ -162,18 +161,19 @@ class History_profiling extends BE_Controller
 				'is_active' => 1
 			]
 		])->result_array();
-		$ind_mrg_first = 'val_indikasi_1';
-		$ind_mrg_last = 'val_indikasi_'.count($indikasi);
+		$merge = [];
 		foreach($indikasi as $k => $v){
 			$arr['val_indikasi_'.($k + 1)] = $v['nama'];
+			$merge[] = 'val_indikasi_'.($k+1);
 		}
 		$arr['total_potensi'] = 'Total Potensi';
+		$arr['status'] = 'Status';
 		
 		$tmp_data = get_data('trxprof_'.$tahun.'_'.$cycle.' a', [
 			'select' => 'd.nama as nama_dokter, s.nama as nama_spesialist, ss.nama as nama_sub_spesialist, o.nama as nama_outlet, b.nama as nama_branch,
 				val_indikasi_1, val_indikasi_2, val_indikasi_3, val_indikasi_4, val_indikasi_6, val_indikasi_7, val_indikasi_8, val_indikasi_9, val_indikasi_10, val_indikasi_11, val_indikasi_12, val_indikasi_13, val_indikasi_14, val_indikasi_15, val_indikasi_16, val_indikasi_17, val_indikasi_18, val_indikasi_19, val_indikasi_20, 
 				(val_indikasi_1 + val_indikasi_2 + val_indikasi_3 + val_indikasi_4 + val_indikasi_5 + val_indikasi_6 + val_indikasi_7 + val_indikasi_8 + val_indikasi_9 + val_indikasi_10 + val_indikasi_11 + val_indikasi_12 + val_indikasi_13 + val_indikasi_14 + val_indikasi_15 + val_indikasi_16 + val_indikasi_15 + val_indikasi_18 + val_indikasi_19 + val_indikasi_20 ) as total_potensi,
-				jumlah_pasien_perbulan, channel_outlet, tipe_pasien',
+				jumlah_pasien_perbulan, channel_outlet, tipe_pasien, a.status',
 			'where' => [
 				'a.mr' => $mr,
 				'a.produk_grup' => $produk_group
@@ -201,9 +201,7 @@ class History_profiling extends BE_Controller
 			'data' => $data,
 			'header' => $arr,
 			'group_header' => [
-				'TOTAL POTENSI' => [
-					$ind_mrg_first, $ind_mrg_last
-				]
+				'TOTAL POTENSI' => $merge,
 			]
 		];
 		$this->load->library('simpleexcel', $config);

@@ -12,21 +12,29 @@ class History_visit_plan extends BE_Controller {
 
 	function data(){
 
-		$data['visit_plan'] = [];
+		$mr = post('fmr');
+		$tahun = post('ftahun');
+		$bulan = post('fbulan');
+		$produk_group = post('fpgroup');
+		$cycle = cycle_by_month($bulan);
 
-		if($this->db->table_exists('trxvisit_'.post('ftahun').'_'.post('fbulan'))){
-			$data['visit_plan'] = get_data('trxvisit_'.post('ftahun').'_'.post('fbulan'), [
-				'where' => [
-					'mr' => post('fmr'),
-					'appvr_at !=' => null,
-					'produk_grup' => post('fpgroup')
-				],
-				'where_in' => [
-					'status' => [3,4]
-				]
-			])->result_array();
-		}
-		render($data,'layout:false');
+		$data = get_data('trxvisit_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'a.*, d.nama as nama_dokter, s.nama as nama_spesialist, o.nama as nama_outlet, (week1 + week2 + week3 + week4 + week5 + week6) as plan_call',
+			'join' => [
+				'trxprof_'.$tahun.'_'.$cycle.' b on b.id = a.profiling',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'outlet o on o.id = b.outlet'
+			],
+			'where' => [
+				'b.mr' => $mr,
+				'b.produk_grup' => $produk_group
+			]
+		])->result_array();
+		
+		render([
+			'data' => $data
+		],'layout:false');
 	}
 	
 	function get_marketing_program(){
@@ -52,9 +60,19 @@ class History_visit_plan extends BE_Controller {
 	}
 
 	function get_data($bulan, $tahun) {
-		$data = get_data('trxvisit_'.$tahun.'_'.$bulan,[
+
+		$cycle = cycle_by_month($bulan);
+		$data = get_data('trxvisit_'.$tahun.'_'.$bulan.' a',[
+			'select' => 'a.*, d.nama as nama_dokter, s.nama as nama_spesialist, o.nama as nama_outlet, p.nama as nama_produk_group',
+			'join' => [
+				'trxprof_'.$tahun.'_'.$cycle.' b on a.profiling = b.id',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'outlet o on o.id = b.outlet',
+				'produk_grup p on p.kode = b.produk_grup'
+			],
 			'where' => [
-				'id' => post('id')
+				'a.id' => post('id')
 			],
 		])->row_array();
 		render($data,'json');
@@ -115,5 +133,70 @@ class History_visit_plan extends BE_Controller {
 			'sort' => 'ASC'
 		])->result_array();
 		render($data, 'json');
+	}
+
+	function export(){
+
+		ini_set('memory_limit', '-1');
+		
+		$bulan = get('bulan');
+		$tahun = get('tahun');
+		$mr = get('mr');
+		$produk_group = get('produk_group');
+		$cycle = cycle_by_month($bulan);
+
+		$data_mr = get_data('tbl_user', 'username', $mr)->row_array();
+
+		$data_visit = get_data('trxvisit_'.$tahun.'_'.$bulan.' a', [
+			'select' => 'a.*, d.nama as nama_dokter, s.nama as nama_spesialist, o.nama as nama_outlet',
+			'join' => [
+				'trxprof_'.$tahun.'_'.$cycle.' b on b.id = a.profiling',
+				'dokter d on d.id = b.dokter',
+				'spesialist s on s.id = d.spesialist',
+				'outlet o on o.id = b.outlet',
+			],
+			'where' => [
+				'b.mr' => $mr,
+				'b.produk_grup' => $produk_group
+			]
+		])->result_array();
+		
+		$header = [
+			'no' => 'No',
+			'nama_dokter' => 'Dokter',
+			'nama_spesialist' => 'Spesialist',
+			'nama_outlet' => 'Outlet',
+			'week1' => 'Week1',
+			'week2' => 'Week2',
+			'week3' => 'Week3',
+			'week4' => 'Week4',
+			'week5' => 'Week5',
+			'week6' => 'Week6',
+			'jumlah' => 'Total',
+			'status' => 'Status'
+		];
+
+		$data = [];
+		$total = 0;
+		foreach($data_visit as $k => $v){
+			$v['no'] = $k + 1;
+			$v['jumlah'] = $v['week1'] + $v['week2'] + $v['week3'] + $v['week4'] + $v['week5'] + $v['week6'];
+			$total += intval($v['jumlah']);
+			$data[] = $v;
+		}
+
+		$config = [
+			'title' => 'VISIT PLAN '.explode(' ',$data_mr['nama'])[0].' '.$tahun.'-'.$bulan,
+			'data' => $data,
+			'header' => $header,
+			'group_header' => [
+				'VISIT PLAN' => [
+					'week1', 'week2', 'week3', 'week4', 'week5', 'week6'
+				],
+			]
+		];
+		$this->load->library('simpleexcel', $config);
+		$this->simpleexcel->export();
+
 	}
 }

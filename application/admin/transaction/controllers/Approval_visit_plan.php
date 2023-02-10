@@ -59,6 +59,7 @@ class Approval_visit_plan extends BE_Controller {
 		$mr 	= post('mr');
 
 		$res['visit_plan'] = get_data('trxvisit_'.date('Y').'_'.date('m').' a', [
+			'select' => 'a.*',
 			'join' => [
 				'trxprof_'.date('Y').'_'.active_cycle().' b on a.profiling = b.id'
 			],
@@ -69,16 +70,10 @@ class Approval_visit_plan extends BE_Controller {
 			],
 		])->result_array();
 
-		$this->db->trans_status();
 		foreach($res['visit_plan'] as $val){
-			update_data('trxvisit_'.date('Y').'_'.date('m'), [
+			$updated = update_data('trxvisit_'.date('Y').'_'.date('m'), [
 				'status' => 'APPROVED'
 			], 'id', $val['id']);
-		}
-		if($this->db->trans_status() === TRUE){
-			$this->db->trans_commit();
-		} else {
-			$this->db->trans_rollback();
 		}
 
 		render(['status' => $this->db->trans_status()], 'json');
