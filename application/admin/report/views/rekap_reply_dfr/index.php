@@ -63,13 +63,14 @@
 					echo '<option value="' . $val['kode'] . '" '.($val['kode'] == get('pgroup') ? 'selected="selected"' : '').'>' . $val['nama'] . '</option>';
 				} ?>
 			</select>
+			<button class="btn btn-fresh btn-export"><i class="fa-download mr-2"></i> Export</button>
 		</div>
 	</div>
 </div>
 <div class="content-body">
 	<!-- <div class="main-container"> -->
 		<?php
-			if(get('bulan') != '' && get('tahun') != '' && get('pgroup') != ''){ ?>
+			if(get('bulan') != '' && get('tahun') != '' && get('pgroup') != '' && $data){ ?>
 				<table class="table-app table-bordered table-sm table-hover" style="width: 100%; text-align:center">
 					<thead>
 						<tr>
@@ -81,115 +82,37 @@
 						</tr>
 						<tbody>
 						<?php
-							$nasional_counter = [
-								'reply_dfr_am' => 0,
-								'reply_dfr_rm' => 0
-							];
-							$tmp_where = [
-								'produk_grup' => get('pgroup'),
-							];
-							if(user('id_group') == RM_ROLE_ID){
-								$tmp_where['rm'] = user('username');
-							}
-							$rm = get_data('trxvisit_'.get('tahun').'_'.get('bulan').' a',[
-								'select' => 'rm.nama as nama_rm, rm.username as rm',
-								'where' => $tmp_where,
-								'join' => [
-									'tbl_user rm on rm.username = a.rm'
-								],
-								'group_by' => 'rm',
-								'sort_by' => 'rm.nama',
-								'sort' => 'ASC'
-							])->result_array();
-							foreach($rm as $key => $val){
-								$rm_counter = [
-									'reply_dfr_am' => 0,
-									'reply_dfr_rm' => 0
-								];
-								$tmp_where = [
-									'produk_grup' => get('pgroup'),
-									'a.rm' => $val['rm']
-								];
-								if(user('id_group') == AM_ROLE_ID){
-									$tmp_where['a.am'] = user('username');
+							foreach($data['child'] as $k => $v){
+								$region = 'EAST';
+								if($v['nama'] == 'DERI SYOFYAN'){
+									$region = 'WEST';
 								}
-								$am = get_data('trxvisit_'.get('tahun').'_'.get('bulan').' a',[
-									'select' => 'am.nama as nama_am, am.username as am',
-									'where' => $tmp_where,
-									'join' => [
-										'tbl_user am on am.username = a.am'
-									],
-									'group_by' => 'am',
-									'sort_by' => 'am.nama',
-									'sort' => 'ASC'
-								])->result_array();
-								
-								foreach($am as $akey => $aval){
-									$am_counter = [
-										'reply_dfr_am' => 0,
-										'reply_dfr_rm' => 0
-									];
-									$tmp_where = [
-										'b.am' => $aval['am'],
-										'b.produk_grup' => get('pgroup'),
-									];
-									if(user('id_group') == MR_ROLE_ID){
-										$tmp_where['b.mr'] = user('username');
-									}
-
-									//select sum plan call uniq dokter and mr
-									// (select count(*) from trxvisit_'.get('tahun').'_'.get('bulan').' where mr = a.mr and produk_grup = "'.get('pgroup').'" and status = 3) as plan_percent_coverage,
-									$mr = get_data('trxdfr_feedback_'.get('tahun').'_'.get('bulan').' a', [
-										'select' => 'mr.nama as nama_mr, count(case when a.id_group = '.AM_ROLE_ID.' then 1 end) as reply_dfr_am, count(case when a.id_group = '.RM_ROLE_ID.' then 1 end) as reply_dfr_rm',
-										'join' => [
-											'trxdfr_'.get('tahun').'_'.get('bulan').' b on b.id = a.dfr',
-											'tbl_user mr on mr.username = b.mr',
-										],
-										'where' => $tmp_where,
-										'group_by' => 'b.mr',
-										'sort_by' => 'mr.nama',
-										'sort' => 'ASC',
-									])->result_array();
-									if(!$mr) continue;
-									foreach($mr as $mkey => $mval){
+								foreach($v['child'] as $ck => $cv){
+									foreach($cv['child'] as $cck => $ccv){
 										echo '<tr style="background-color:#b4d6c1">';
-										echo '<td>'.($mkey+1).'</td>';
-										echo '<td>'.$mval['nama_mr'].' (MR)</td>';
-										echo '<td> -- </td>';
-										echo '<td> '.$mval['reply_dfr_am'].' </td>';
-										echo '<td> '.$mval['reply_dfr_rm'].' </td>';
+											echo '<td>'.($cck+1).'</td>';
+											echo '<td>'.($ccv['nama']).' (MR) </td>';
+											echo '<td>'.$region.'</td>';
+											echo '<td>'.($ccv['reply_am']).' </td>';
+											echo '<td>'.($ccv['reply_nsm']).' </td>';
 										echo '</tr>';
-										$am_counter['reply_dfr_am'] += $mval['reply_dfr_am'];
-										$am_counter['reply_dfr_rm'] += $mval['reply_dfr_rm'];
 									}
 									echo '<tr style="background-color:#8dc3a7">';
-									echo '<td>'.($akey+1).'</td>';
-									echo '<td>'.$aval['nama_am'].'(AM)</td>';
-									echo '<td> -- </td>';
-									echo '<td> '.$am_counter['reply_dfr_am'].' </td>';
-									echo '<td> '.$am_counter['reply_dfr_rm'].' </td>';
+										echo '<td>'.($ck+1).'</td>';
+										echo '<td>'.($cv['nama']).' (AM) </td>';
+										echo '<td>'.$region.'</td>';
+										echo '<td>'.($cv['reply_am']).' </td>';
+										echo '<td>'.($cv['reply_nsm']).' </td>';
 									echo '</tr>';
-									$rm_counter['reply_dfr_am'] += $am_counter['reply_dfr_am'];
-									$rm_counter['reply_dfr_rm'] += $am_counter['reply_dfr_rm'];
 								}
-								// if($rm_counter['reply_dfr'] <= 0) continue;
 								echo '<tr style="background-color:#6baf92">';
-								echo '<td>'.($key+1).'</td>';
-								echo '<td>'.$val['nama_rm'].' (RM)</td>';
-								echo '<td> -- </td>';
-								echo '<td> '.$rm_counter['reply_dfr_am'].' </td>';
-								echo '<td> '.$rm_counter['reply_dfr_rm'].' </td>';
+									echo '<td>'.($k+1).'</td>';
+									echo '<td>'.($v['nama']).' (NSM) </td>';
+									echo '<td>'.$region.'</td>';
+									echo '<td>'.($v['reply_am']).' </td>';
+									echo '<td>'.($v['reply_nsm']).' </td>';
 								echo '</tr>';
-								$nasional_counter['reply_dfr_am'] += $rm_counter['reply_dfr_am'];
-								$nasional_counter['reply_dfr_rm'] += $rm_counter['reply_dfr_rm'];	
 							}
-							echo '<tr>';
-							echo '<th></th>';
-							echo '<th>National</th>';
-							echo '<th> -- </th>';
-							echo '<th> '.$nasional_counter['reply_dfr_am'].' </th>';
-							echo '<th> '.$nasional_counter['reply_dfr_rm'].' </th>';
-							echo '</tr>';
 						?>
 						</tbody>
 					</thead>
@@ -241,4 +164,12 @@
 			}
 		})
 	}
+
+	$(document).on('click', '.btn-export', function(){
+		let bulan = $('#fbulan').val()
+		let tahun = $('#ftahun').val()
+		let produk_group = $('#fpgroup').val()
+
+		location.href = base_url + 'report/rekap_reply_dfr/export?bulan='+bulan+'&tahun='+tahun+'&produk_group='+produk_group
+	})
 </script>

@@ -7,335 +7,190 @@ class Rekap_reply_dfr extends BE_Controller {
 	}
 
 	function index() {
-		render();
+		
+		$tahun = get('tahun');
+		$bulan = get('bulan');
+		$produk_group = get('pgroup');
+		
+
+		if(!empty($tahun) && !empty($bulan) && !empty($produk_group)){
+			$data = $this->__get_data($bulan, $tahun, $produk_group);
+		} else {
+			$data = [];
+		}
+
+		render([
+			'data' => $data
+		]);
+
 	}
 
-	function data(){
+	function export(){
+		$tahun = get('tahun');
+		$bulan = get('bulan');
+		$produk_group = get('produk_group');
+		$header = [
+			'no' => 'No.',
+			'nama' => 'Name',
+			'region' => 'Region',
+			'reply_am' => 'Reply DFR AM',
+			'reply_nsm' => 'Reply DFR NSM',
+		];
 
 		$data = [];
-		$bulan = post('fbulan');
-		$tahun = post('ftahun');
-		$produk_group = post('fpgroup');
-		$tmp_where = [
-			'produk_grup' => $produk_group,
-			'am.nama != ' => '',
+		$data_feedback = $this->__get_data($bulan, $tahun, $produk_group);
+		foreach($data_feedback['child'] as $k => $v){
+			$region = 'EAST';
+			if($v['nama'] == 'DERI SYOFYAN'){
+				$region = 'WEST';
+			}
+			foreach($v['child'] as $ck => $cv){
+				foreach($cv['child'] as $cck => $ccv){
+					$ccv['bgcolor'] = '#b4d6c1';
+					$ccv['nama'] = $ccv['nama'].'(MR)';
+					$ccv['region'] = $region;
+					$ccv['no'] = $cck + 1;
+					$data[] = $ccv;
+				}
+				$cv['bgcolor'] = '#8dc3a7';
+				$ccv['nama'] = $ccv['nama'].'(AM)';
+				$cv['region'] = $region;
+				$cv['no'] = $ck + 1;
+				$data[] = $cv;
+			}
+			$v['bgcolor'] = '#6baf92';
+			$ccv['nama'] = $ccv['nama'].'(NSM)';
+			$v['region'] = $region;
+			$v['no'] = $k + 1;
+			$data[] = $v;
+		}
+
+		$conf = [
+			'title' => 'DFR '.$bulan.' '.$tahun,
+			'header' => $header,
+			'data' => $data,
 		];
 
-		if(user('id_group') == AM_ROLE_ID){
-			$tmp_where['trxdfr_feedback_'.$tahun.'_'.$bulan.'.id_group'] = AM_ROLE_ID;
-			$tmp_where['trxdfr_feedback_'.$tahun.'_'.$bulan.'.user'] = user('id');
-			$tmp_where['trxdfr_'.$tahun.'_'.$bulan.'.am'] = user('username');
-		}
-
-		if(user('id_group') == RM_ROLE_ID){
-			$tmp_where['trxdfr_feedback_'.$tahun.'_'.$bulan.'.id_group'] = RM_ROLE_ID;
-			$tmp_where['trxdfr_feedback_'.$tahun.'_'.$bulan.'.user'] = user('id');
-			$tmp_where['trxdfr_'.$tahun.'_'.$bulan.'.rm'] = user('username');
-		}
-		$data['rm'] = get_data('trxdfr_'.$tahun.'_'.$bulan,[
-			'select' => 'am.nama as nama_am, rm.nama as nama_rm, mr.nama as nama_mr, count(trxdfr_feedback_'.$tahun.'_'.$bulan.'.dfr) as jumlah, concat(" -- ") as nama_region',
-			'where' => $tmp_where,
-			'join' => [
-				'tbl_user am on am.username = trxdfr_'.$tahun.'_'.$bulan.'.am type left',
-				'tbl_user rm on rm.username = trxdfr_'.$tahun.'_'.$bulan.'.rm type left',
-				'tbl_user mr on mr.username = trxdfr_'.$tahun.'_'.$bulan.'.mr type left',
-				'trxdfr_feedback_'.$tahun.'_'.$bulan.' on trxdfr_feedback_'.$tahun.'_'.$bulan.'.dfr = trxdfr_'.$tahun.'_'.$bulan.'.id type left'
-			],
-			'group_by' => 'mr',
-			'sort_by' => 'am.nama',
-			'sort' => 'asc'
-		])->result_array();
-		// debug($data);
-		render($data,'layout:false');
-	}
-	
-
-	function get_all($cycle, $tahun, $mr){
-		$profiling = get_data('trxprof_'.$tahun.'_'.$cycle,[
-			'where' => [
-				'id' => get('id')
-			]
-		])->row_array();
-		if(count($profiling)<=0){
-			return 0;
-		} else {
-			$data['profiling'] = get_data('trxprof_'.$tahun.'_'.$cycle, [
-				'where' => [
-					'dokter' => $profiling['dokter'],
-					'apprv_at !=' => null,
-					'mr' => $mr
-				],
-				'where_in' => [
-					'status' => [2,3]
-				],
-				'sort_by' => 'nama_outlet',
-				'sort' => 'ASC'
-			])->result_array();
-			render($data['profiling'], 'json');
-		}
+		$this->load->library('simpleexcel', $conf);
+		$this->simpleexcel->export();
 	}
 
-	function get_dokter_detail($dokter, $bulan, $tahun, $mr){
-
-		$cycle = 3;
-		if(in_array($bulan, [1,2,3,4])){
-			$cycle = 1;
-		} else if(in_array($bulan, [5,6,7,8])){
-			$cycle = 2;
-		}
+	private function __get_data($bulan, $tahun, $produk_group){
 		
-		$table_visit_plan = 'trxvisit_'.$tahun.'_'.$bulan;
-		$table_profiling = 'trxprof_'.$tahun.'_'.$cycle;
-		$table_data_actual = 'trxdact_'.$tahun.'_'.$bulan;
+		$cycle = cycle_by_month($bulan);
 
-		if($this->db->table_exists($table_data_actual) == false){
-			$this->load->helper('generate_trx_table');
-			init_table_data_actual($tahun, $bulan);
-		}
-
-		$dokter = get_data($table_visit_plan.' a', [
-			'select' => 'a.*, b.nama_spesialist, b.channel_outlet, c.customer_matrix,  c.customer_matrix_rexulti,  c.customer_matrix_maintena',
-			'join' => [
-				$table_profiling.' b on b.id = a.profiling',
-				$table_data_actual.' c on c.dokter = a.dokter type left'
-			],
-			'where' => [
-				'a.status' => 3,
-				'a.mr' => $mr,
-				'a.dokter' => $dokter
-			],
-		])->row_array();
-
-		render($dokter, 'json');
-	}
-	
-	function get_data($bulan, $tahun) {	
-		$data = get_data('trxdfr_'.$tahun.'_'.$bulan,[
-			'join' => [
-				'trxdfr_feedback_'.$tahun.'_'.$bulan.' on trxdfr_feedback_'.$tahun.'_'.$bulan.'.dfr = trxdfr_'.$tahun.'_'.$bulan.'.id and trxdfr_feedback_'.$tahun.'_'.$bulan.'.user = '.user('id').' type left'
-			],
-			'where' => [
-				'trxdfr_'.$tahun.'_'.$bulan.'.id' => get('id'),
-			]
-		])->row_array();
-		render($data,'json');
-	}
-
-	function get_feedback($tahun, $bulan){
-		$data = get_data('trxdfr_feedback_'.$tahun.'_'.$bulan, [
-			'select' => 'trxdfr_feedback_'.$tahun.'_'.$bulan.'.*, tbl_user.nama as nama_user, tbl_user_group.nama as nama_grup',
-			'where' => [
-				'dfr' => get('id')
-			],
-			'join' => [
-				'tbl_user on tbl_user.id = trxdfr_feedback_'.$tahun.'_'.$bulan.'.user',
-				'tbl_user_group on tbl_user_group.id = trxdfr_feedback_'.$tahun.'_'.$bulan.'.id_group',
-			]
-		])->result_array();
-		render($data, 'json');
-	}
-
-	function init_call_data(){
-		$id = get('id');
-		$data = get_data('sub_call_type','call_type',$id)->result_array();
-		render($data, 'json');
-	}
-
-	function get_produk_grup(){
-		$data = get_data('produk_grup', [
-			'where' => [
-				'kode_team' => get('team'),
-				'kode_divisi' => 'E'
-			]
-		])->result_array();
-		render($data, 'json');
-	}
-
-	function get_am(){
-		$where = [
-			'history_organogram.kode_team' => get('team'),
-			'nama_am !=' => '',
-			'history_organogram.kode_divisi' => 'E',
-			'history_organogram.tanggal_end' => '0000-00-00'
-		];
-		if(user('id_group') == MR_ROLE_ID){
-			$where['n_mr'] = user('username');
+		$parameter_search = '';
+		if(user('id_group') == NSM_ROLE_ID){
+			$parameter_search = 'n_nsm';
 		} else if(user('id_group') == AM_ROLE_ID){
-			$where['n_am'] = user('username');
+			$parameter_search = 'n_am';
+		} else if(user('id_group') == MR_ROLE_ID){
+			$parameter_search = 'n_mr';
 		}
-		$data = get_data('history_organogram_detail', [
-			'join' => [
-				'history_organogram on history_organogram.id = history_organogram_detail.id_history_organogram'
-			],
-			'where' => $where,
-			'group_by' => 'nama_am',
-			'sort_by' => 'nama_am',
-			'sort' => 'ASC'
-		])->result_array();
-		render($data, 'json');
-	}
 
-	function get_mr(){
-		$where = [
-			'history_organogram.kode_team' => get('team'),
-			'n_am' => get('am'),
-			'nama_mr !=' => '',
-			'history_organogram.kode_divisi' => 'E',
-			'history_organogram.tanggal_end' => '0000-00-00'
+		$tmp_where = [
+			'b.tanggal_end' => '0000-00-00',
+			'a.kode_divisi' => 'E',
+			'a.n_nsm != ' => '',
+			't.is_active' => 1,
+			'n_nsm' => ['00525','00868']
 		];
-		if(user('id_group') == MR_ROLE_ID){
-			$where['n_mr'] = user('username');
-		}
-		$data = get_data('history_organogram_detail', [
+		
+		if(!empty($parameter_search)) $tmp_where[$parameter_search] = user('username');
+
+		$data_nsm = get_data('history_organogram_detail a', [
+			'select' => 'a.n_nsm as nip, a.nama_nsm as nama',
 			'join' => [
-				'history_organogram on history_organogram.id = history_organogram_detail.id_history_organogram'
+				'history_organogram b on a.id_history_organogram = b.id',
+				'tim t on t.kode = a.kode_team',
 			],
-			'where' => $where,
-			'group_by' => 'nama_mr',
-			'sort_by' => 'nama_mr',
-			'sort' => 'ASC'
-		])->result_array();
-		render($data, 'json');
-	}
-
-	function get_indikasi(){
-		$where = [];
-		if(get('pgrup')){
-			$where['produk_grup'] = get('pgrup');
-		}
-		$data = get_data('indikasi', [
-			'where' => $where
-		])->result_array();
-		if(!empty($where)){
-			render($data, 'json');
-		}
-	}
-
-	function approval($cycle, $tahun){
-
-		$alasan_not_approve = post('alasan_not_approve');
-		$this->db->trans_begin();
-		$profiling = get_data('trxprof_'.$tahun.'_'.$cycle, 'id', post('id'))->row_array();
-		if(!empty($alasan_not_approve)){
-			update_data('trxprof_'.$tahun.'_'.$cycle, [
-				'status' => '3',
-				'alasan_not_approve' => $alasan_not_approve
-			], [
-				'dokter' => $profiling['dokter'],
-				'mr' => $profiling['mr']
-			]);
-		} else {
-			update_data('trxprof_'.$tahun.'_'.$cycle, [
-				'status' => '2',
-			], [
-				'dokter' => $profiling['dokter'],
-				'mr' => $profiling['mr']
-			]);
-		}
-		if($this->db->trans_status()===TRUE){
-			$this->db->trans_commit();
-		} else {
-			$this->db->trans_rollback();
-		}
-
-		render(['status' => $this->db->trans_status()],'json');
-
-	}
-
-	function init_data($bulan, $tahun, $mr){
-		$id_produk_grup = post('produk_grup');
-		$visit_plan = get_data('trxvisit_'.$tahun.'_'.$bulan, [
-			'select' => 'dokter as id, nama_dokter as nama',
-			'where' => [
-				'produk_grup' => $id_produk_grup,
-				'mr' => $mr,
-				'status' => 3,
-				'appvr_at != '=> NULL,
-			]
+			'where' => $tmp_where,
+			'group_by' => 'a.n_nsm',
 		])->result_array();
 
 		$data = [
-			'dokter' => $visit_plan,
-			'indikasi' => get_data('indikasi', [
-				'where' => [
-					'produk_grup' => $id_produk_grup,
-					'is_active' => 1
-				]
-			])->result_array(),
-			'kompetitor_diresepkan' => get_data('kompetitor_diresepkan', [
-				'where' => [
-					'produk_grup' => $id_produk_grup,
-					'is_active' => 1
-				]
-			])->result_array(),
-			'key_message' => get_data('key_message', [
-				'where' => [
-					'produk_grup' => $id_produk_grup,
-					'is_active' => 1
-				]
-			])->result_array(),
-			'produk' => get_data('produk', [
-				'select' => 'produk.*',
+			'reply_am' => 0,
+			'reply_nsm' => 0,
+			'child' => []
+		];
+		foreach($data_nsm as $k => $v){
+			
+			$v['reply_am'] = 0;
+			$v['reply_nsm'] = 0;
+			$c['child'] = [];
+
+			$tmp_where = [
+				'b.tanggal_end' => '0000-00-00',
+				'a.kode_divisi' => 'E',
+				'a.n_am != ' => '',
+				't.is_active' => 1,
+				'n_nsm' => $v['nip']
+			];
+			if(!empty($parameter_search)) $tmp_where[$parameter_search] = user('username');
+			$data_am = get_data('history_organogram_detail a', [
+				'select' => 'a.n_am as nip, a.nama_am as nama',
 				'join' => [
-					'produk_subgrup on produk_subgrup.kode = produk.kode_subgrup',
-					'produk_grup on produk_grup.kode = produk_subgrup.kode_grup'
+					'history_organogram b on a.id_history_organogram = b.id',
+					'tim t on t.kode = a.kode_team',
 				],
-				'where' => [
-					'produk_grup.kode' => $id_produk_grup,
-					'produk.is_active' => 1
-				]
-			])->result_array()
-		];
-		render($data,'json');
-	}
+				'where' => $tmp_where,
+				'group_by' => 'a.n_am',
+			])->result_array();
 
-	function update(){
-		$data = post();
-		if(!$this->db->table_exists('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'])){
-			$this->load->helper('generate_trx_table');
-			init_table_dfr_feedback($data['tahun'], $data['bulan']);
-		}
+			foreach($data_am as $kam => $vam){
 
-		$feedback = get_data('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'], [
-			'where' => [
-				'user' 	=> user('id'),
-				'dfr'	=> $data['id']
-			]
-		])->num_rows();
-		if($feedback > 0){
-			$this->db->delete('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'], [
-				'user' 	=> user('id'),
-				'dfr'	=> $data['id']
-			]);
-		}
-		insert_data('trxdfr_feedback_'.$data['tahun'].'_'.$data['bulan'], [
-			'user' 					=> user('id'),
-			'dfr' 					=> $data['id'],
-			'id_group'				=> user('id_group'),
-			'penilaian'				=> $data['penilaian'],
-			'alasan_belum_sesuai'	=> $data['alasan_belum_sesuai']
-		]);
-		$dfr = get_data('trxdfr_'.$data['tahun'].'_'.$data['bulan'], 'id', $data['id'])->row_array();
-		if($dfr['call_type'] != $data['call_type']){
-			if($data['call_type'] == 1){
-				$sub_call_type = 1;
-			} elseif($data['call_type'] == 2) {
-				$sub_call_type = 5;
-			} elseif($data['call_type'] == 3) {
-				$sub_call_type = 11;
+				$vam['reply_am'] = 0;
+				$vam['reply_nsm'] = 0;
+
+				$tmp_where = [
+					'b.tanggal_end' => '0000-00-00',
+					't.is_active' => 1,
+					'a.n_am' => $vam['nip'],
+					'a.n_mr != ' => ''
+				];
+				if(!empty($parameter_search)) $tmp_where[$parameter_search] = user('username');
+
+				$data_mr = get_data('history_organogram_detail a', [
+					'select' => 'a.n_mr, a.nama_mr',
+					'join' => [
+						'history_organogram b on a.id_history_organogram = b.id',
+						'tim t on t.kode = a.kode_team',
+					],
+					'where' => $tmp_where,
+					'group_by' => 'a.n_mr',
+				])->result_array();
+
+				$mr = array_column($data_mr, 'n_mr');
+
+				$data_feedback = get_data('tbl_user mr', [
+					'select' => 'mr.username as nip, mr.nama as nama, SUM(IF(a.id_group = 8, 1, 0)) as reply_am, SUM(IF(a.id_group = 6,1,0)) as reply_nsm',
+					'where' => [
+						'mr.username' => $mr,
+					],
+					'join' => [
+						'trxprof_'.$tahun.'_'.$cycle.' c on c.mr = mr.username and c.produk_grup = "'.$produk_group.'" type left',
+						'trxvisit_'.$tahun.'_'.$bulan.' b on b.profiling = c.id type left',
+						'trxdfr_'.$tahun.'_'.$bulan.' d on d.visit_plan = b.id type left',
+						'trxdfr_feedback_'.$tahun.'_'.$bulan.' a on a.dfr = d.id and month(a.cat) = "'.$bulan.'" and year(a.cat) = "'.$tahun.'" type left',
+					],
+					'group_by' => 'mr.nama'
+				])->result_array();
+
+				$vam['child'] = $data_feedback;
+
+				foreach($data_feedback as $kf => $vf){
+					$vam['reply_am'] += $vf['reply_am'];
+					$vam['reply_nsm'] += $vf['reply_nsm'];
+					$v['reply_am'] += $vf['reply_am'];
+					$v['reply_nsm'] += $vf['reply_nsm'];
+
+				}
+
+				$v['child'][] = $vam;
 			}
-			update_data('trxdfr_'.$data['tahun'].'_'.$data['bulan'], [
-				'call_type' => $data['call_type'],
-				'sub_call_type' => $sub_call_type
-			], 'id', $data['id']);
+			$data['child'][] = $v;
 		}
-
-		$response = [
-			'status' => 'success',
-			'message' => 'Feedback Anda telah tersimpan'
-		];
-
-		render($response, 'json');
+		return $data;
 	}
 
 }

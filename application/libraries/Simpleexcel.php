@@ -74,7 +74,7 @@ class Simpleexcel {
     function export() {
         $objPHPExcel    = new Spreadsheet();
         $objPHPExcel->getProperties()
-        ->setCreator("Wel Well")
+        ->setCreator("Lylia Mage OP")
         ->setTitle($this->title[0]);
         for($z=0; $z < count($this->title); $z++) {
             if($z > 0) $objPHPExcel->createSheet();
@@ -200,6 +200,15 @@ class Simpleexcel {
             }
             $ii = $i - 1;
             foreach($this->data[$z] as $r) {
+                if(isset($r['bgcolor'])){
+                    $objPHPExcel
+                    ->getActiveSheet()
+                    ->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)
+                    ->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setARGB(str_replace('#','',$r['bgcolor']));
+                }
                 $objPHPExcel->getActiveSheet()->getStyle("A".$i.":".$this->col_excel[count($thead)-1].$i)->applyFromArray(
                     array(
                         'borders' => array(
@@ -212,6 +221,8 @@ class Simpleexcel {
                 );
                 foreach($thead as $k => $a) {
                     $content = explode('>>', $a);
+                    if(!isset($r[$content[0]])) $r[$content[0]] = ''; //skipping content
+
                     $konten = isset($this->alias[$z][$content[0]][$r[$content[0]]]) ? $this->alias[$z][$content[0]][$r[$content[0]]] : $r[$content[0]];
                     if(strpos($thead[$k],'>>-d') !== false || strpos($thead[$k], '>>-b') || strpos($thead[$k], '>>-s') !== false || strpos($thead[$k], '>>-c') !== false || strpos($thead[$k], '>>-p') !== false) {
                         if(strpos($thead[$k], '>>-b') !== false) {

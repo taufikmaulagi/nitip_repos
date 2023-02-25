@@ -12,69 +12,29 @@ class Use_confirm extends BE_Controller {
 
 	function data(){
 
-		$data['visit_plan'] = [];
+		$bulan = post('fbulan');
+		$tahun = post('ftahun');
+		$mr = post('fmr');
+		$produk_group = post('fpgroup');
 
-		if($this->db->table_exists('trxvisit_'.post('ftahun').'_'.post('fbulan'))){
-			if(!$this->db->table_exists('trxdfr_'.post('ftahun').'_'.post('fbulan'))){
-				$this->load->helper('generate_trx_table');
-				init_table_dfr(post('ftahun'), post('fbulan'));
-			}
-			$data['visit_plan'] = get_data('trxvisit_'.post('ftahun').'_'.post('fbulan').' a', [
-				'select' => 
-				//	'a.nama_dokter, d.nama as nama_spesialist, a.nama_outlet, e.nama as nama_sub_spesialist, 
-				//	(if(a.status = 3, a.plan_call, 0)) as plan_call, 
-				//	(select count(*) from trxdfr_'.post('ftahun').'_'.post('fbulan').' where mr = a.mr and produk_grup = "'.post('fpgroup').'" and status = 2 and dokter = a.dokter) as actual_call,
-				//	(if(a.plan_call > 0 and a.status = 3, 1, 0)) as plan_dokter_coverage,
-				//	if((select count(*) from trxdfr_'.post('ftahun').'_'.post('fbulan').' where mr = a.mr and produk_grup = "'.post('fpgroup').'" and status = 2 and dokter = a.dokter) >= a.plan_call,1,0) as actual_dokter_coverage,
-				//	(if(a.status = 3 && a.plan_call > 0, 1, 0)) as plan_percent_coverage,
-				//	(if(a.plan_call <= count(case when b.status = 2 then 1 end), 1, 0) + 1) as actual_percent_coverage',
-					'a.nama_dokter, d.nama as nama_spesialist, a.nama_outlet, e.nama as nama_sub_spesialist, 
-					(if(a.status = 3, a.plan_call, 0)) as plan_call, 
-					(select count(*) from trxdfr_'.post('ftahun').'_'.post('fbulan').' where mr = a.mr and produk_grup = "'.post('fpgroup').'" and status = 2 and dokter = a.dokter) as actual_call,
-					(if(a.plan_call > 0 and a.status = 3, 1, 0)) as plan_dokter_coverage,
-					(if(b.status = 2, 1, 0)) as actual_dokter_coverage,
-					(if(a.status = 3 && a.plan_call > 0, 1, 0)) as plan_percent_coverage,
-					(if(a.plan_call <= count(case when b.status = 2 then 1 end), 1, 0)) as actual_percent_coverage',
-				'join' => [
-					'trxdfr_'.post('ftahun').'_'.post('fbulan').' b on b.visit_plan = a.id type left',
-					'dokter c on c.id = a.dokter type left',
-					'spesialist d on d.id = c.spesialist type left',
-					'sub_spesialist e on e.id = c.subspesialist type left',
-				],
-				'where' => [
-					'a.mr' => post('fmr'),
-					'a.status' => '3',
-					'a.produk_grup' => post('fpgroup')
-				],
-				'group_by' => 'a.dokter',
-				'sort_by' => 'a.nama_dokter',
-				'sort' => 'ASC',
-			])->result_array();
+		if(!table_exists('rekap_call_activity_'.$tahun)){
+			$this->load->helper('gen_report_table');
+			init_table_rekap_call_activity($tahun);
 		}
-		render($data,'layout:false');
+
+		$data = get_data('rekap_call_activity_'.$tahun, [
+			'where' => [
+				'bulan' => $bulan,
+				'mr' => $mr,
+				'kode_produk_grup' => $produk_group
+			]
+		])->result_array();
+		
+		render([
+			'data' => $data
+		],'layout:false');
 	}
 	
-	function get_marketing_program(){
-		$pgroup = get('pgroup');
-		$marketing_program = get_data('marketing_program', [
-			'where' => [
-				'produk_grup' => $pgroup,
-				'is_active' =>  1
-			]
-		])->result_array();
-		render($marketing_program,'json');
-	}
-
-	function get_marketing_aktifitas(){
-		$pgroup = get('pgroup');
-		$marketing_aktifitas = get_data('marketing_aktifitas', [
-			'where' => [
-				'produk_grup' => $pgroup,
-				'is_active' => 1
-			]
-		])->result_array();
-		render($marketing_aktifitas,'json');
-	}
 
 	function get_data($bulan, $tahun) {
 		$data = get_data('trxvisit_'.$tahun.'_'.$bulan,[
@@ -136,5 +96,101 @@ class Use_confirm extends BE_Controller {
 			'sort' => 'ASC'
 		])->result_array();
 		render($data, 'json');
+	}
+
+	function export(){
+		
+		$tahun = get('tahun');
+		$bulan = get('bulan');
+		$mr = get('mr');
+		$produk_group = get('produk_group');
+
+		$data_mr = get_data('tbl_user','username', $mr)->row_array();
+		$data_ca = get_data('rekap_call_activity_'.$tahun, [
+			'select' => 'nama_dokter, nama_spesialist, nama_sub_spesialist, nama_outlet, plan_call, actual_call, dc_plan, dc_actual, pc_plan, pc_actual',
+			'where' => [
+				'bulan' => $bulan,
+				'mr' => $mr,
+				'kode_produk_grup' => $produk_group
+			]
+		])->result_array();
+
+		$header = [
+			'no' => 'No.',
+			'nama_dokter'  =>  'Dokter',
+			'nama_spesialist' => 'Spesialist',
+			'nama_sub_spesialist' => 'Sub Spesialist',
+			'nama_outlet' => 'Outlet',
+			'plan_call' => 'PLAN',
+			'actual_call' => 'ACTUAL',
+			'percent_call' => '%',
+			'dc_plan' => 'PLAN',
+			'dc_actual' => 'ACTUAL',
+			'percent_dc' => '%',
+			'pc_plan' => 'PLAN',
+			'pc_actual' => 'ACTUAL',
+			'percent_pc' => '%',
+ 		];
+
+		$data = [];
+		$total_plan_call = 0;
+		$total_actual_call = 0;
+		$total_dc_plan = 0;
+		$total_dc_actual = 0;
+		$total_pc_plan = 0;
+		$total_pc_actual = 0;
+
+		foreach($data_ca as $k => $v){
+			$v['no'] = $k + 1;
+			$v['percent_call'] = ($v['actual_call'] > 0 && $v['plan_call'] > 0 ? round($v['actual_call'] / $v['plan_call'],2) : 0).'%';
+			$v['percent_dc'] = ($v['dc_actual'] > 0 && $v['dc_plan'] > 0 ? round($v['dc_actual'] / $v['dc_plan'],2) : 0).'%';
+			$v['percent_pc'] = ($v['pc_actual'] > 0 && $v['pc_plan'] > 0 ? round($v['pc_actual'] / $v['pc_plan'],2) : 0).'%';
+
+			$total_plan_call += $v['plan_call'];
+			$total_actual_call += $v['actual_call'];
+			$total_dc_plan += $v['dc_plan'];
+			$total_dc_actual += $v['dc_actual'];
+			$total_pc_plan += $v['pc_plan'];
+			$total_pc_actual += $v['pc_actual'];
+
+			$data[] = $v;
+		}
+
+		$total_percent_call = ($total_plan_call > 0 && $total_actual_call > 0 ? round($total_actual_call / $total_plan_call, 2) : 0).'%';
+		$total_percent_dc = ($total_dc_plan > 0 && $total_dc_actual > 0 ? round($total_dc_actual / $total_dc_plan, 2) : 0).'%';
+		$total_percent_pc = ($total_pc_plan > 0 && $total_pc_actual > 0 ? round($total_pc_actual / $total_pc_plan, 2) : 0).'%';
+
+		$data[] = [
+			'plan_call' => $total_plan_call,
+			'actual_call' => $total_actual_call,
+			'percent_call' =>  $total_percent_call,
+			'dc_plan' => $total_dc_plan,
+			'dc_actual' => $total_dc_actual,
+			'percent_dc' => $total_percent_dc,
+			'pc_plan' => $total_pc_plan,
+			'pc_actual' => $total_pc_actual,
+			'percent_pc' => $total_percent_pc
+		];
+
+		$conf = [
+			'title' => 'CALL ACTIVITY '.explode(' ',$data_mr['nama'])[0].' '.$tahun.'-'.$bulan,
+			'header' => $header,
+			'data' => $data,
+			'group_header' => [
+				'TOTAL CALL' => [
+					'plan_call','actual_call','percent_call'
+				],
+				'DOCTOR COVERAGE' => [
+					'dc_plan','dc_actual','percent_dc'
+				],
+				'PERCENT COVERAGE' => [
+					'pc_plan','pc_actual','percent_pc'
+				]
+			]
+ 		];
+		
+		$this->load->library('simpleexcel', $conf);
+		$this->simpleexcel->export();
+
 	}
 }
